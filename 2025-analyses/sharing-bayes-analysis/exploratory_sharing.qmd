@@ -1,0 +1,63 @@
+---
+title: "sharing_bayesian_analysis"
+format: html
+---
+
+```{r}
+library(tidyverse)
+library(brms)
+library(bayesplot)
+library(bayestestR)
+```
+
+
+```{r}
+ds <- read.csv("data/sl_hz30_sharing_NEWsocietalcomp_ds.csv")
+
+hazard_subtypes <- ds %>%
+  select(freqsevdr_30_IA, freqLAPD_30_IA) %>%
+  filter(if_all(everything(), ~ !is.na(.))) %>%
+  scale()
+
+# Step 2: Run PCA
+pca_subtypes <- prcomp(hazard_subtypes, center = TRUE, scale. = TRUE)
+
+# Step 3: Extract first principal component
+ds$hazard_PC1 <- NA  # pre-fill column with NAs
+ds$hazard_PC1[complete.cases(ds[, c("freqsevdr_30_IA", "freqLAPD_30_IA")])] <- pca_subtypes$x[, 1]
+```
+
+```{r}
+model <- brm(
+  formula = S2_Resolved_IA_TR ~ hazard_PC1 + fd_freq_30_IA,
+  family = bernoulli(link = "logit"),
+  data = ds,
+  prior = c(
+    prior(normal(0,1), class = "b"),
+    prior(normal(0,1), class = "Intercept")
+  ),
+  chains = 4,
+  iter = 4000,
+  cores = 4
+)
+
+mcmc_trace(model)
+```
+
+
+```{r}
+model <- brm(
+  formula = S2_Resolved_IA_TR ~ hazard_PC1 + fd_freq_30_IA,
+  family = bernoulli(link = "logit"),
+  data = ds,
+  prior = c(
+    prior(normal(0, 1), class = "b"),
+    prior(normal(0, 1), class = "Intercept")
+  ),
+  chains = 4,
+  cores = 4,
+  iter = 4000,
+  control = list(adapt_delta = 0.95)
+)
+```
+

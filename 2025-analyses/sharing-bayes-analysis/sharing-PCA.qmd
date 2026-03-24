@@ -1,0 +1,88 @@
+---
+title: "sharing-PCA"
+format: html
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+ds <- read.csv("data/sl_hz30_sharing_NEWsocietalcomp_ds.csv")
+ds <- ds %>%
+  select(ID, OWC, all_freq_30_IA, sevnonfd_freq_30_IA, fd_freq_30_IA, freqdr_30_IA, freqsevdr_30_IA, freqLAPD_30_IA, freqfl_30_IA, S2_Resolved_IA_TR, S3_Resolved_IA_TR)
+```
+
+
+```{r}
+pca_vars <- c("all_freq_30_IA", "sevnonfd_freq_30_IA", "fd_freq_30_IA", "freqdr_30_IA", "freqsevdr_30_IA", "freqLAPD_30_IA", "freqfl_30_IA")
+
+X_all <- ds %>%
+  transmute(
+    ID,
+    all_freq_30_IA = factor(all_freq_30_IA, ordered = TRUE),
+    sevnonfd_freq_30_IA = factor(sevnonfd_freq_30_IA, ordered = TRUE),
+    fd_freq_30_IA = factor(fd_freq_30_IA, ordered = TRUE),
+    freqdr_30_IA = factor(freqdr_30_IA, ordered = TRUE),
+    freqsevdr_30_IA = factor(freqsevdr_30_IA, ordered = TRUE),
+    freqLAPD_30_IA = factor(freqLAPD_30_IA, ordered = TRUE),
+    freqfl_30_IA = factor(freqfl_30_IA, ordered = TRUE)
+  )
+
+# 1) Complete-case subset for PCA; preserve ID
+X_cc <- X_all %>% drop_na(all_of(pca_vars))
+
+# (optional) cleanups
+X_cc <- X_cc %>%
+  mutate(across(where(is.list), ~unlist(., use.names = FALSE))) %>%
+  mutate(across(where(is.factor), droplevels))
+
+# 2) Set rownames to ID so any matrix result carries IDs
+rownames_df <- X_cc$ID
+
+X_cc <- as.data.frame(X_cc %>%
+  select(all_of(pca_vars)))
+
+# 3) Mixed correlations
+hc <- polycor::hetcor(X_cc, use = "complete.obs", std.err = FALSE)
+hc
+R  <- hc$correlations
+
+# 4) PCA on R; get PC1 weights via regression scoring
+pc1 <- psych::principal(R, nfactors = 1, rotate = "none")
+
+L   <- as.matrix(unclass(pc1$loadings))    # 3x1 loadings
+W   <- solve(R) %*% L                      # 3x1 regression weights
+
+# 5) Build standardized numeric matrix in SAME ROW ORDER; set rownames=ID
+Z <- scale(cbind(
+  all_freq_30_IA = as.integer(X_cc$all_freq_30_IA),
+  sevnonfd_freq_30_IA = as.integer(X_cc$sevnonfd_freq_30_IA),
+  fd_freq_30_IA = as.integer(X_cc$fd_freq_30_IA),
+  freqdr_30_IA = as.integer(X_cc$freqdr_30_IA),
+  freqsevdr_30_IA = as.integer(X_cc$freqsevdr_30_IA),
+  freqLAPD_30_IA = as.integer(X_cc$freqLAPD_30_IA),
+  freqfl_30_IA = as.integer(X_cc$freqfl_30_IA)
+))
+rownames(Z) <- rownames_df
+
+# 6) Compute PC1 scores and z-standardize them; names(PC1_def) are IDs
+PC1_freq <- as.numeric(scale(Z %*% W))
+names(PC1_freq) <- rownames_df
+
+# 7) Turn into a data frame keyed by ID
+scores_df <- tibble(
+  ID = as.character(names(PC1_freq)),
+  PC1_def = as.numeric(PC1_freq)
+)
+
+# 8) Join back to the full dataset by ID (rows with missing inputs get NA)
+data_with_pc1 <- data %>%
+  mutate(ID = as.character(ID)) %>%
+  left_join(scores_df, by = "ID")
+
+
+# data_clean <- data_with_pc1[complete.cases(data_with_pc1[, c("PC1_def", "Sev_T", "Pred_T")]), ]
+
+```
+

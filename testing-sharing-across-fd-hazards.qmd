@@ -1,0 +1,196 @@
+---
+title: "testing-sharing-across-fd-hazards"
+format: html
+---
+
+```{r}
+library(tidyverse)
+library(polycor)
+library(psych)
+library(patchwork)
+
+ds_FA <- read_csv("sharing-dataset-for-analysis.csv")
+colnames(ds_FA)
+```
+
+# Testing Daily and Seasonal Food Sharing Across Food Destroying Hazards
+This working document outlines the thought process and Bayesian framework for analyzing how food-destroying hazards affect daily and seasonal food sharing, building on the analyses presented in the Our Better Nature paper (Ember et al., 2018). Following the creation of new society-level hazard variables (2025), Carol conducted nonparametric correlation analyses with the sharing variables which revealed a significant finding: daily food sharing was negatively associated with severe food-destroying hazards. This relationship was not identified in the original publication. 
+
+4/1/2026
+Furthermore, a new set of society level variables were created that categorize hazards into distinct theoretical groups: normative and disaster. See https://docs.google.com/document/d/1MwssdVxB7UduOJSlDWGyg-YFCoJvPRsOnI86GWZC4RE/edit?tab=t.0
+
+2025 Society Level measures also needed to be regenerated due to changes to the event level dataset. See https://docs.google.com/document/d/1lNbMZ3ZJ86LOOp1c1gCXzSfFz08BbOI6RsZ2i1KBs7M/edit?tab=t.0#heading=h.5trdob7rf4ue for more information. 
+
+This document will continue to build on the previous work that was done below, while also rerunning previous code (to account for 2025 society level variable adjustments) and integrating some of these new hazard categorization variables into our analyses. 
+
+## Seasonal Food Sharing
+
+### Bayesian Logistic Regressions
+
+```{r}
+cor(
+  ds_FA$disaster_h9a_sev_exposure_30_IA,
+  ds_FA$fd_hazards_freq_PC,
+  use = "complete.obs",
+  method = "spearman"
+)
+
+cor(
+  ds_FA$disaster_h9a_sev_exposure_30_IA,
+  ds_FA$all_freqLAPD_30_IA,
+  use = "complete.obs",
+  method = "spearman"
+)
+
+cor(
+  ds_FA$disaster_h9a_sev_exposure_30_IA,
+  ds_FA$all_freqsevdr_30_IA,
+  use = "complete.obs",
+  method = "spearman"
+)
+```
+
+
+```{r}
+data_clean_S3 <- ds_FA[complete.cases(ds_FA[, c("disaster_h9a_sev_exposure_30_IA", "S3_Resolved_IA_TR")]), ]
+
+# quasi complete separation...
+ggplot(data_clean_S3, aes(x = fd_hazards_freq_PC, y = S3_Resolved_IA_TR)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+
+mod_S3 <- brm(
+  formula = S3_Resolved_IA_TR ~ disaster_h9a_sev_exposure_30_IA,
+  data = data_clean_S3,
+  family = bernoulli(link = "logit"),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(cauchy(0, 1), class = "Intercept")  # Weakly informative Cauchy prior for the intercept
+  )
+)
+
+summary(mod_S3)
+plot(mod_S3, type = "coef")
+
+conditional_effects_plot <- conditional_effects(mod_S3)
+plot(conditional_effects_plot)
+
+# backed by previous results, we're curious to see if food destroying, severe droughts, and LAPD hazard frequencies increase the odds of seasonal food sharing
+hypothesis(mod_S3, "disaster_h9a_sev_exposure_30_IA > 0") # they do!
+
+draws1 <- as_draws_df(mod_S3)
+
+# Plot for Sev
+pfdS3 <- draws1 %>%
+  ggplot(aes(x = b_disaster_h9a_sev_exposure_30_IA)) +
+  geom_density(fill = "coral1", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  labs(
+    title = "Seasonal Food Sharing",
+    x = expression(beta ~ "(Severity Exposure to Food Destroying Hazards)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pfdS3
+```
+
+```{r}
+
+```
+
+
+
+
+## Daily Food Sharing
+
+```{r}
+data_clean_S2 <- ds_FA[complete.cases(ds_FA[, c("disaster_h9a_sev_exposure_30_IA", "S2_Resolved_IA_TR")]), ]
+```
+
+```{r}
+ggplot(data_clean_S2, aes(x = disaster_h9a_sev_exposure_30_IA, y = S2_Resolved_IA_TR)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+# sensitivity analysis
+data_clean_S2$z_sev <- scale(data_clean_S2$disaster_h9a_sev_exposure_30_IA)
+
+S2_data_trim <- data_clean_S2[abs(data_clean_S2$z_sev) <= 2, ]
+
+
+ggplot(data_trim, aes(x = disaster_h9a_sev_exposure_30_IA, y = S2_Resolved_IA_TR)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_S2 <- brm(
+  formula = S2_Resolved_IA_TR ~ disaster_h9a_sev_exposure_30_IA,
+  data = S2_data_trim,
+  family = bernoulli(link = "logit"),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(cauchy(0, 1), class = "Intercept")  # Weakly informative Cauchy prior for the intercept
+  )
+)
+
+summary(mod_S2)
+```
+
+```{r}
+plot(mod_S2, type = "coef")
+
+conditional_effects_plot <- conditional_effects(mod_S2)
+plot(conditional_effects_plot)
+```
+
+
+```{r}
+# in the our better nature paper, daily food sharing was negatively associated with food destroying hazards
+hypothesis(mod_S2, "disaster_h9a_sev_exposure_30_IA < 0") # they do!
+
+draws2 <- as_draws_df(mod_S2)
+
+# Plot for Sev
+pfdS2 <- draws2 %>%
+  ggplot(aes(x = b_disaster_h9a_sev_exposure_30_IA)) +
+  geom_density(fill = "deepskyblue", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  labs(
+    title = "Daily Food Sharing",
+    x = expression(beta ~ "(Severity Exposure to Food Destroying Hazards)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pfdS2
+```
+
+```{r}
+fd_dists <- pfdS3 + pfdS2
+
+ggsave(
+  filename = "bayes_plot_vis/fd_dists.png",
+  plot = fd_dists,
+  width = 10,
+  height = 6,
+  dpi = 300
+)
+```
+

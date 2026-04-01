@@ -44,7 +44,7 @@ pc
 
 # -------------------------------------------------------------------
 # PC1 subset
-pc1_vars <- c("fd_freq_30_IA",#"all_freqdr_30_IA", 
+pc1_vars <- c("fd_freq_30_IA", # "all_freqdr_30_IA", 
               "all_freqsevdr_30_IA", "all_freqLAPD_30_IA")
 
 X_pc1 <- ds %>%

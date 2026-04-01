@@ -1,28 +1,7 @@
 library(tidyverse)
 library(brms)
 
-sh_gh <- read_csv("../minerva/Sharing/Upstream/DT-food-labor-sharing-combined-clean.csv")
-owc_identifier <- read_csv("data/EA-societal-complexity-variables-qc-Imputed-Values-Data.csv")
-owc_identifier <- owc_identifier[, -c(4:10)]
-
-hz <- read_csv("2025-sl-hazards-with-fd-freq-PC.csv")
-hz_cat <- read_csv("../minerva/Hazards/Datasets/DT-hzcats-society-level.csv") %>%
-  select(ID, OWC, DQ, allhazards_H9a_sev_exposure_30, disaster_h9a_sev_exposure_30, 
-         allhazards_H9a_sev_exposure_30_IA, disaster_h9a_sev_exposure_30_IA)
-
-sh_OWC <- full_join(owc_identifier, sh_gh, by = c("ID")) 
-
-sh_FA <- sh_OWC %>%
-  mutate(across(
-    -c(1:3),
-    ~ na_if(., 77) %>%
-      na_if(88) %>%
-      na_if(99)
-  ))
-
-ds_FA_1 <- full_join(hz_cat, sh_FA, by = c("ID", "OWC"))
-
-ds_FA <- full_join(ds_FA_1, hz, by = c("ID","OWC"))
+ds_FA <- read_csv("sharing-dataset-for-analysis.csv")
 
 #-------------------------------------------------------------------------------
 # Now we will conduct a binary logistic bayesian regression analysis on Seasonal food sharing
@@ -80,7 +59,7 @@ pp_check(mod_S3, type='error_scatter_avg', ndraws = 200)
 hypothesis(mod_S3, "fd_hazards_freq_PC = 0")
 
 # backed by previous results, we're curious to see if food destroying, severe droughts, and LAPD hazard frequencies increase the odds of seasonal food sharing
-hypothesis(mod_S3, "PC1_hz_fd_freq > 0") # they do!
+hypothesis(mod_S3, "fd_hazards_freq_PC > 0") # they do!
 
 # however, model is over confident....weak prior is not helping the integrity of the results
 

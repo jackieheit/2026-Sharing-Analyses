@@ -1,8 +1,13 @@
 library(tidyverse)
 
 sh_gh <- read_csv("../minerva/Sharing/Upstream/DT-food-labor-sharing-combined-clean.csv")
-owc_identifier <- read_csv("data/EA-societal-complexity-variables-qc-Imputed-Values-Data.csv")
-owc_identifier <- owc_identifier[, -c(4:10)]
+
+owc_identifier <- read_csv("data/EA-societal-complexity-variables-qc-Imputed-Values-Data.csv") %>%
+  mutate(
+    OWC = str_trim(OWC, side = c("both"))
+  )
+
+owc_identifier <- owc_identifier[, -c(4:10)] 
 
 hz <- read_csv("2025-sl-hazards-with-fd-freq-PC.csv")
 hz_cat <- read_csv("../minerva/Hazards/Datasets/DT-hzcats-society-level.csv") %>%

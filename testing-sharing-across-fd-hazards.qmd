@@ -130,6 +130,7 @@ ggplot(S2_data_trim, aes(x = disaster_h9a_sev_exposure_30_IA, y = S2_Resolved_IA
   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
 ```
 
+### new exposure variable
 ```{r}
 mod_S2 <- brm(
   formula = S2_Resolved_IA_TR ~ disaster_h9a_sev_exposure_30_IA,
@@ -178,6 +179,81 @@ pfdS2 <- draws2 %>%
   )
 
 pfdS2
+```
+
+### fd freq PC
+```{r}
+data_clean_S2_PC <- ds_FA[complete.cases(ds_FA[, c("fd_hazards_freq_PC", "S2_Resolved_IA_TR")]), ]
+
+m1 <- glm(S2_Resolved_IA_TR ~ fd_hazards_freq_PC,
+          data = data_clean_S2_PC, family = binomial)
+
+summary(m1)
+
+ggplot(data_clean_S2_PC, aes(x = fd_hazards_freq_PC, y = S2_Resolved_IA_TR)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+# sensitivity analysis
+data_clean_S2_PC$z_sev <- scale(data_clean_S2$fd_hazards_freq_PC)
+
+S2_data_trim_PC <- data_clean_S2[abs(data_clean_S2_PC$z_sev) <= 2, ]
+
+
+ggplot(S2_data_trim_PC, aes(x = fd_hazards_freq_PC, y = S2_Resolved_IA_TR)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_S2_PC <- brm(
+  formula = S2_Resolved_IA_TR ~ fd_hazards_freq_PC,
+  data = S2_data_trim_PC,
+  family = bernoulli(link = "logit"),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(cauchy(0, 1), class = "Intercept")  # Weakly informative Cauchy prior for the intercept
+  )
+)
+
+summary(mod_S2_PC)
+hypothesis(mod_S2, "disaster_h9a_sev_exposure_30_IA < 0") # they do!
+```
+
+```{r}
+plot(mod_S2_PC, type = "coef")
+
+conditional_effects_plot_PC <- conditional_effects(mod_S2_PC)
+plot(conditional_effects_plot_PC)
+```
+
+
+```{r}
+# in the our better nature paper, daily food sharing was negatively associated with food destroying hazards
+hypothesis(mod_S2_PC, "fd_hazards_freq_PC < 0") # they do!
+
+draws2 <- as_draws_df(mod_S2_PC)
+
+# Plot for Sev
+pfdS2_PC <- draws2 %>%
+  ggplot(aes(x = b_fd_hazards_freq_PC)) +
+  geom_density(fill = "deepskyblue", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  labs(
+    title = "Daily Food Sharing",
+    x = expression(beta ~ "(Frequency of Food Destroying Hazards PC Score)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pfdS2_PC
 ```
 
 ```{r}

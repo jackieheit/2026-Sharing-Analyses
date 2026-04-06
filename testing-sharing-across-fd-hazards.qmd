@@ -267,6 +267,13 @@ ds_sevnonfd <- full_join(sevnonfd, soc_master, by = c("ID","OWC", "DQ")) %>%
   )
 
 ds_FA_sevnonfd <- inner_join(ds_FA, ds_sevnonfd, by = c("ID", "OWC", "DQ"))
+
+cor(
+  ds_FA_sevnonfd$disaster_nonfd_sev_exposure_30,
+  ds_FA_sevnonfd$disaster_h9a_sev_exposure_30,
+  use = "complete.obs",
+  method = "spearman"
+)
 ```
 # Severe Non Food destroying Hazards
 ## Seasonal Food Sharing
@@ -345,11 +352,11 @@ pfdS3_nonfd
 
 ## Daily Food Sharing
 ```{r}
-sevnfd_S2 <- ds_FA_sevnonfd[complete.cases(ds_FA_sevnonfd[, c("disaster_nonfd_sev_exposure_30", "S2_Resolved_IA_TR")]), ]
+sevnfd_S2 <- ds_FA_sevnonfd[complete.cases(ds_FA_sevnonfd[, c("disaster_nonfd_sev_exposure_30_IA", "S2_Resolved_IA_TR")]), ]
 ```
 
 ```{r}
-ggplot(sevnfd_S2, aes(x = disaster_nonfd_sev_exposure_30, y = S2_Resolved_IA_TR)) +
+ggplot(sevnfd_S2, aes(x = disaster_nonfd_sev_exposure_30_IA, y = S2_Resolved_IA_TR)) +
   geom_jitter(height = 0.05, alpha = 0.6) +
   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
 
@@ -359,12 +366,12 @@ sevnfd_S2$z_sev <- scale(sevnfd_S2$disaster_nonfd_sev_exposure_30)
 sevnfd_S2_trim <- sevnfd_S2[abs(sevnfd_S2$z_sev) <= 2, ]
 
 
-ggplot(sevnfd_S2_trim, aes(x = disaster_nonfd_sev_exposure_30, y = S2_Resolved_IA_TR)) +
+ggplot(sevnfd_S2_trim, aes(x = disaster_nonfd_sev_exposure_30_IA, y = S2_Resolved_IA_TR)) +
   geom_jitter(height = 0.05, alpha = 0.6) +
   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
 
 cor(
-  sevnfd_S2_trim$disaster_nonfd_sev_exposure_30,
+  sevnfd_S2_trim$disaster_nonfd_sev_exposure_30_IA,
   sevnfd_S2_trim$S2_Resolved_IA_TR,
   use = "complete.obs",
   method = "spearman"
@@ -373,7 +380,7 @@ cor(
 
 ```{r}
 mod_sevnfd_S2 <- brm(
-  formula = S2_Resolved_IA_TR ~ disaster_nonfd_sev_exposure_30,
+  formula = S2_Resolved_IA_TR ~ disaster_nonfd_sev_exposure_30_IA,
   data = sevnfd_S2_trim,
   family = bernoulli(link = "logit"),
   chains = 4,
@@ -386,6 +393,8 @@ mod_sevnfd_S2 <- brm(
 )
 
 summary(mod_sevnfd_S2)
+
+
 ```
 
 ```{r}
@@ -398,13 +407,14 @@ plot(c_effects_plot)
 
 ```{r}
 # in the our better nature paper, there was no relationship identified between daily food sharing and severe nonfd hazards
-hypothesis(mod_sevnfd_S2, "disaster_nonfd_sev_exposure_30 > 0") # they do!
+hypothesis(mod_sevnfd_S2, "disaster_nonfd_sev_exposure_30_IA > 0") # they do!
 
+posterior_summary(mod_sevnfd_S2)
 draws2 <- as_draws_df(mod_sevnfd_S2)
 
 # Plot for Sev
 pfdS2_nonfd <- draws2 %>%
-  ggplot(aes(x = b_disaster_nonfd_sev_exposure_30)) +
+  ggplot(aes(x = b_disaster_nonfd_sev_exposure_30_IA)) +
   geom_density(fill = "deepskyblue", alpha = 0.7) +
   geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
   labs(
@@ -419,6 +429,7 @@ pfdS2_nonfd <- draws2 %>%
   )
 
 pfdS2_nonfd
+
 ```
 
 ```{r}

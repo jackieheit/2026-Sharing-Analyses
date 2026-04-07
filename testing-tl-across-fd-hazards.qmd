@@ -1,0 +1,35 @@
+---
+title: "testing-cultural-tightness-across-fd-nonfd-hazards"
+format: html
+---
+
+```{r}
+library(tidyverse)
+
+ds_FA <- read_csv("sharing-dataset-for-analysis.csv")
+
+tl <- read_csv("../minerva/Tight-Loose/Datasets/DT-TL-FinalData.csv") %>%
+  mutate(
+    OWC = str_trim(OWC, side = c("both"))
+  )
+
+ds <- full_join(ds_FA, tl, by = c("OWC"))
+
+```
+
+```{r}
+ds_FA %>%
+  count(OWC, name = "n_ds") %>%
+  inner_join(
+    tl %>% count(OWC, name = "n_tl"),
+    by = "OWC"
+  ) %>%
+  filter(n_ds > 1 | n_tl > 1)
+
+
+discrepant_cases <- tl %>%
+  filter(OWC == "NE09" | OWC == "SP26")
+
+write.csv(discrepant_cases, "tight-loose-double-codes.csv")
+```
+

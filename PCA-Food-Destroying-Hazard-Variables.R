@@ -6,7 +6,7 @@ library(psych)
 ds <- read.csv("../minerva/Hazards/Datasets/DT-hz-society-level-FA.csv")
 ds <- ds %>%
   select(ID, OWC, all_freq_30_IA, sevnonfd_freq_30_IA, fd_freq_30_IA, all_freqdr_30_IA,
-         all_freqsevdr_30_IA, all_freqLAPD_30_IA, all_freqfl_30_IA)
+         all_freqsevdr_30_IA, all_freqLAPD_30_IA, all_freqfl_30_IA, sevnonfd_freq_30, sevnonfd_freq_30_IA)
 
 pca_vars <- c("all_freq_30_IA", "sevnonfd_freq_30_IA", "fd_freq_30_IA",
               "all_freqdr_30_IA", "all_freqsevdr_30_IA", "all_freqLAPD_30_IA", "all_freqfl_30_IA")

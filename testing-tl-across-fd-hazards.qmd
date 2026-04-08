@@ -14,22 +14,190 @@ tl <- read_csv("../minerva/Tight-Loose/Datasets/DT-TL-FinalData.csv") %>%
   )
 
 ds <- full_join(ds_FA, tl, by = c("OWC"))
+```
 
+# Food destroying
+```{r}
+fd_tl <- ds[complete.cases(ds[, c("disaster_h9a_sev_exposure_30", "General_TL5B_pref_final")]), ]
 ```
 
 ```{r}
-ds_FA %>%
-  count(OWC, name = "n_ds") %>%
-  inner_join(
-    tl %>% count(OWC, name = "n_tl"),
-    by = "OWC"
-  ) %>%
-  filter(n_ds > 1 | n_tl > 1)
+ggplot(fd_tl, aes(x = disaster_h9a_sev_exposure_30, y = General_TL5B_pref_final)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+# sensitivity analysis
+fd_tl$z_sev <- scale(fd_tl$disaster_h9a_sev_exposure_30)
+
+fd_tl_trim <- fd_tl[abs(fd_tl$z_sev) <= 2, ]
 
 
-discrepant_cases <- tl %>%
-  filter(OWC == "NE09" | OWC == "SP26")
-
-write.csv(discrepant_cases, "tight-loose-double-codes.csv")
+ggplot(fd_tl_trim, aes(x = disaster_h9a_sev_exposure_30, y = General_TL5B_pref_final)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
 ```
 
+```{r}
+fd_tl_trim <- fd_tl_trim %>%
+  mutate(
+    General_TL5B_pref_final = ordered(General_TL5B_pref_final,
+      levels = c(1, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4))
+  )
+
+
+mod_fd_tl <- brm(
+  formula = General_TL5B_pref_final ~ disaster_h9a_sev_exposure_30 + mo(ea033),
+  data = fd_tl_trim,
+  family = cumulative(link = "logit"),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,control = list(adapt_delta = 0.95),
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(cauchy(0, 1), class = "Intercept")  # Weakly informative Cauchy prior for the intercept
+  )
+)
+
+summary(mod_fd_tl)
+```
+
+```{r}
+# plot(mod_fd_tl, type = "coef")
+
+c_effects_plot <- conditional_effects(mod_fd_tl, categorical = TRUE)
+c_effects_plot
+```
+
+
+
+# Boxplot between food destroying hazard exposures and cultural tightness
+```{r}
+fd_tl_bp <- fd_tl_trim %>%
+  mutate(
+    tl_bin = factor(if_else(General_TL5B_pref_final > 2.5, 1, 0))
+  )
+
+ggplot(fd_tl_bp, aes(x = tl_bin, y = disaster_h9a_sev_exposure_30)) +
+  geom_boxplot() +
+  labs(
+    x = "Tight-Loose (binned)",
+    y = "Disaster H9a Severity Exposure (EP 30)",
+    title = "Disaster Severity Exposure by Tight-Loose Category"
+  ) +
+  theme_minimal()
+  
+  
+  
+```
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+# in the our better nature paper, there was a positive relationship between seasonal food sharing and severe non-fd hazards
+hypothesis(mod_fd_tl, "disaster_h9a_sev_exposure_30 < 0") # they do!
+
+drawsfd <- as_draws_df(mod_fd_tl)
+
+# Plot for Sev
+pfd_tl <- drawsfd %>%
+  ggplot(aes(x = b_disaster_h9a_sev_exposure_30)) +
+  geom_density(fill = "mediumseagreen", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  labs(
+    title = "Cultural Tightness",
+    x = expression(beta ~ "(Weighted exposure to food-destroying hazards)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pfd_tl
+```
+
+
+# Severe non-food destroying frequency
+```{r}
+sevnfd_tl <- ds[complete.cases(ds[, c("disaster_nonfd_sev_exposure_30_IA", "General_TL5B_pref_final")]), ]
+```
+
+```{r}
+ggplot(sevnfd_tl, aes(x = disaster_nonfd_sev_exposure_30_IA, y = General_TL5B_pref_final)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "lm", se = FALSE, color = "#66c2a4")
+
+# sensitivity analysis
+sevnfd_tl$z_sev <- scale(sevnfd_tl$sevnonfd_freq_30_IA)
+
+sevnfd_tl_trim <- sevnfd_tl[abs(sevnfd_tl$z_sev) <= 2, ]
+
+
+ggplot(sevnfd_tl_trim, aes(x = sevnonfd_freq_30_IA, y = General_TL5B_pref_final)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "lm", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+sevnfd_tl_trim <- sevnfd_tl_trim %>%
+  mutate(
+    General_TL5B_pref_final = ordered(General_TL5B_pref_final,
+      levels = c(1, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4))
+  )
+
+
+mod_sevnfd_tl <- brm(
+  formula = General_TL5B_pref_final ~ sevnonfd_freq_30_IA,
+  data = sevnfd_tl_trim,
+  family = cumulative(link = "logit"),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(cauchy(0, 1), class = "Intercept")  # Weakly informative Cauchy prior for the intercept
+  )
+)
+
+summary(mod_sevnfd_tl)
+```
+```{r}
+# plot(mod_fd_tl, type = "coef")
+
+c_effects_plot <- conditional_effects(mod_sevnfd_tl, categorical = TRUE)
+c_effects_plot
+```
+
+```{r}
+# in the our better nature paper, there was a positive relationship between seasonal food sharing and severe non-fd hazards
+hypothesis(mod_sevnfd_tl, "sevnonfd_freq_30_IA > 0") # they do!
+
+draws_sevnfd <- as_draws_df(mod_sevnfd_tl)
+
+# Plot for Sev
+psevnfd_tl <- draws_sevnfd %>%
+  ggplot(aes(x = b_sevnonfd_freq_30_IA)) +
+  geom_density(fill = "mediumseagreen", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  labs(
+    title = "Cultural Tightness",
+    x = expression(beta ~ "(Severe non food-destroying hazard frequency)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+psevnfd_tl
+```

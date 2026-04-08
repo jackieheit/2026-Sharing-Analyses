@@ -5,9 +5,7 @@ sh_gh <- read_csv("../minerva/Sharing/Upstream/DT-food-labor-sharing-combined-cl
 owc_identifier <- read_csv("data/EA-societal-complexity-variables-qc-Imputed-Values-Data.csv") %>%
   mutate(
     OWC = str_trim(OWC, side = c("both"))
-  )
-
-owc_identifier <- owc_identifier[, -c(4:10)] 
+  ) %>% select(OWC, ID, eHRAF.Name, ea033)
 
 hz <- read_csv("2025-sl-hazards-with-fd-freq-PC.csv")
 
@@ -21,13 +19,15 @@ sh_FA <- sh_OWC %>%
       na_if(99)
   ))
 
+hz_cat <- read_csv("../minerva/Hazards/Datasets/DT-hzcats-society-level.csv") %>%
+  select(ID, OWC, DQ, allhazards_H9a_sev_exposure_30, disaster_h9a_sev_exposure_30, 
+         allhazards_H9a_sev_exposure_30_IA, disaster_h9a_sev_exposure_30_IA, normative_est_count_30, normative_est_count_30_IA, allhazards_est_count_30_IA)
+
 ds_FA_1 <- full_join(hz_cat, sh_FA, by = c("ID", "OWC"))
 
 ds_FA <- full_join(ds_FA_1, hz, by = c("ID","OWC"))
 
-hz_cat <- read_csv("../minerva/Hazards/Datasets/DT-hzcats-society-level.csv") %>%
-  select(ID, OWC, DQ, allhazards_H9a_sev_exposure_30, disaster_h9a_sev_exposure_30, 
-         allhazards_H9a_sev_exposure_30_IA, disaster_h9a_sev_exposure_30_IA, normative_est_count_30, normative_est_count_30_IA, allhazards_est_count_30_IA)
+
 
 hz_event <- read_csv("../minerva/Hazards/Datasets/DT-hz-event-level-expanded-FA.csv") %>%
   mutate(

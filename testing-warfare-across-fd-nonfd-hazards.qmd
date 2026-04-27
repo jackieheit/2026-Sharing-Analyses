@@ -1,0 +1,1255 @@
+---
+title: "`testing-warfare-across-fd-nonfd-hazards"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(brms)
+
+ds_FA <- read_csv("sharing-dataset-for-analysis.csv")
+
+wf <- read_csv("../minerva/Warfare/Upstream/DT-WarfareViolence-Combined-Clean.csv") %>%
+  mutate(
+    OWC = str_trim(OWC, side = c("both")),
+    State = str_trim(State, side = c("both"))
+  )
+
+ds <- full_join(ds_FA, wf, by = c("OWC", "ID"))
+
+```
+# Variable spreads
+```{r}
+var_spreads <- ds %>%
+  filter(State == "No" & newpac_R < 3)
+```
+
+## food destroying vars
+
+```{r}
+hist(var_spreads$allhazards_H9a_sev_exposure_30)
+hist(var_spreads$allhazards_H9a_sev_exposure_30_IA)
+hist(var_spreads$disaster_h9a_sev_exposure_30)
+hist(var_spreads$disaster_h9a_sev_exposure_30_IA)
+hist(var_spreads$fd_freq_30)
+hist(var_spreads$fd_freq_30_IA)
+```
+
+```{r}
+ggplot(var_spreads, aes(x = ovfreq_R , y = allhazards_H9a_sev_exposure_30 )) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(var_spreads, aes(x = ovfreq_R , y = allhazards_H9a_sev_exposure_30_IA )) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(var_spreads, aes(x = ovfreq_R , y = disaster_h9a_sev_exposure_30 )) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(var_spreads, aes(x = ovfreq_R , y = disaster_h9a_sev_exposure_30_IA )) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(var_spreads, aes(x = ovfreq_R , y = fd_freq_30 )) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(var_spreads, aes(x = ovfreq_R , y = fd_freq_30_IA)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+# Food destroying Hazards
+
+## Overall frequency of warfare
+```{r}
+fd_ovfreq_IA <- var_spreads[complete.cases(var_spreads[, c("fd_freq_30_IA", "ovfreq_R")]), ] 
+```
+
+```{r}
+ggplot(fd_ovfreq_IA, aes(x = ovfreq_R , y = fd_freq_30_IA)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+# sensitivity analysis
+# fd_ovfreq$z_sev <- scale(fd_ovfreq$fd_freq_30_IA)
+
+# fd_ovfreq_trim <- fd_ovfreq[abs(fd_ovfreq$z_sev) <= 2, ]
+
+
+# ggplot(fd_ovfreq_trim, aes(x = ovfreq_R, y = fd_freq_30_IA)) +
+#   geom_jitter(height = 0.05, alpha = 0.6) +
+#   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+
+test <- lm(ovfreq_R ~ fd_freq_30_IA, data = fd_ovfreq_IA)
+summary(test)
+plot(test)
+
+
+test_no26 <- lm(ovfreq_R ~ fd_freq_30_IA,
+                data = fd_ovfreq_IA[-26, ])
+
+summary(test)
+summary(test_no26)
+```
+
+```{r}
+mod_fd_ovfreq_IA <- brm(
+  formula = ovfreq_R ~ fd_freq_30_IA,
+  data = fd_ovfreq,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(cauchy(0, 1), class = "Intercept")  # Weakly informative Cauchy prior for the intercept
+  )
+)
+
+summary(mod_fd_ovfreq_IA)
+plot(mod_fd_ovfreq_IA, type = "coef")
+
+conditional_effects_plot <- conditional_effects(mod_fd_ovfreq_IA)
+plot(conditional_effects_plot)
+```
+
+```{r}
+# in the our better nature paper, daily food sharing was negatively associated with food destroying hazards
+hypothesis(mod_fd_ovfreq_IA, "fd_freq_30_IA > 0") # they do!
+
+draws2 <- as_draws_df(mod_fd_ovfreq_IA)
+
+# Plot for Sev
+pfd_ovfreq_IA <- draws2 %>%
+  ggplot(aes(x = b_fd_freq_30_IA)) +
+  geom_density(fill = "purple", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  labs(
+    title = "Overall Warfare Frequency",
+    x = expression(beta ~ "(Food Destroying Hazard Frequency (IA))"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pfd_ovfreq_IA
+```
+
+```{r}
+fd_ovfreq <- var_spreads[complete.cases(var_spreads[, c("fd_freq_30", "ovfreq_R")]), ] 
+```
+
+```{r}
+mod_fd_ovfreq <- brm(
+  formula = ovfreq_R ~ fd_freq_30,
+  data = fd_ovfreq,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),
+    prior(cauchy(0, 1), class = "Intercept")
+  )
+)
+
+summary(mod_fd_ovfreq)
+plot(mod_fd_ovfreq, type = "coef")
+
+conditional_effects_plot <- conditional_effects(mod_fd_ovfreq)
+plot(conditional_effects_plot)
+```
+
+```{r}
+hypothesis(mod_fd_ovfreq, "fd_freq_30 > 0")
+
+draws2 <- as_draws_df(mod_fd_ovfreq)
+
+pfd_ovfreq <- draws2 %>%
+  ggplot(aes(x = b_fd_freq_30)) +
+  geom_density(fill = "purple", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  labs(
+    title = "Overall Warfare Frequency",
+    x = expression(beta ~ "(Food Destroying Hazard Frequency)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pfd_ovfreq
+```
+
+## External Warfare 
+```{r}
+fd_extfreq <- var_spreads[complete.cases(var_spreads[, c("fd_freq_30", "extfreq_R")]), ] 
+```
+
+```{r}
+ggplot(fd_extfreq, aes(x = fd_freq_30, y = extfreq_R)) +
+  geom_jitter(width = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+# sensitivity analysis
+# fd_extfreq$z_sev <- scale(fd_extfreq$fd_freq_30)
+
+# fd_extfreq_trim <- fd_extfreq[abs(fd_extfreq$z_sev) <= 2, ]
+
+# ggplot(fd_extfreq_trim, aes(x = fd_freq_30, y = extfreq_R)) +
+#   geom_jitter(width = 0.05, alpha = 0.6) +
+#   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+```{r}
+test <- lm(extfreq_R ~ fd_freq_30, data = fd_extfreq)
+summary(test)
+plot(test)
+
+test_no17 <- lm(extfreq_R ~ fd_freq_30,
+                data = fd_extfreq[-17, ])
+
+summary(test_full)
+summary(test_no26)
+```
+
+```{r}
+mod_fd_extfreq <- brm(
+  formula = extfreq_R ~ fd_freq_30,
+  data = fd_extfreq,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),
+    prior(cauchy(0, 1), class = "Intercept")
+  )
+)
+
+summary(mod_fd_extfreq)
+plot(mod_fd_extfreq, type = "coef")
+
+conditional_effects_plot <- conditional_effects(mod_fd_extfreq)
+plot(conditional_effects_plot)
+```
+
+```{r}
+hypothesis(mod_fd_extfreq, "fd_freq_30 > 0")
+
+draws2 <- as_draws_df(mod_fd_extfreq)
+
+pfd_extfreq <- draws2 %>%
+  ggplot(aes(x = b_fd_freq_30)) +
+  geom_density(fill = "purple", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  labs(
+    title = "External Warfare Frequency",
+    x = expression(beta ~ "(Food Destroying Hazard Frequency)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pfd_extfreq
+```
+
+
+```{r}
+fd_extfreq_IA <- var_spreads[complete.cases(var_spreads[, c("fd_freq_30_IA", "extfreq_R")]), ] 
+```
+
+
+```{r}
+ggplot(fd_extfreq_IA, aes(x = fd_freq_30_IA, y = extfreq_R)) +
+  geom_jitter(width = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+```{r}
+test <- lm(extfreq_R ~ fd_freq_30_IA, data = fd_extfreq_IA)
+summary(test)
+plot(test)
+
+test_no27 <- lm(extfreq_R ~ fd_freq_30_IA,
+                data = fd_extfreq_IA[-27, ])
+
+summary(test_no27)
+```
+
+```{r}
+mod_fd_extfreq_IA <- brm(
+  formula = extfreq_R ~ fd_freq_30_IA,
+  data = fd_extfreq_IA,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),
+    prior(cauchy(0, 1), class = "Intercept")
+  )
+)
+
+summary(mod_fd_extfreq_IA)
+plot(mod_fd_extfreq_IA, type = "coef")
+
+conditional_effects_plot <- conditional_effects(mod_fd_extfreq_IA)
+plot(conditional_effects_plot)
+```
+
+```{r}
+hypothesis(mod_fd_extfreq_IA, "fd_freq_30_IA > 0")
+
+draws2 <- as_draws_df(mod_fd_extfreq_IA)
+
+pfd_extfreq_IA <- draws2 %>%
+  ggplot(aes(x = b_fd_freq_30_IA)) +
+  geom_density(fill = "purple", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  labs(
+    title = "External Warfare Frequency",
+    x = expression(beta ~ "(Food Destroying Hazard Frequency (IA))"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pfd_extfreq_IA
+```
+## Internal Warfare
+
+```{r}
+fd_intrfreq <- var_spreads[complete.cases(var_spreads[, c("fd_freq_30", "intrfreq_R")]), ] 
+
+ggplot(fd_intrfreq, aes(x = fd_freq_30, y = intrfreq_R)) +
+  geom_jitter(width = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_fd_intrfreq <- brm(
+  formula = intrfreq_R ~ fd_freq_30,
+  data = fd_intrfreq,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),
+    prior(cauchy(0, 1), class = "Intercept")
+  )
+)
+
+summary(mod_fd_intrfreq)
+plot(mod_fd_intrfreq, type = "coef")
+
+conditional_effects_plot <- conditional_effects(mod_fd_intrfreq)
+plot(conditional_effects_plot)
+```
+
+```{r}
+hypothesis(mod_fd_intrfreq, "fd_freq_30 > 0")
+
+draws2 <- as_draws_df(mod_fd_intrfreq)
+
+pfd_intrfreq <- draws2 %>%
+  ggplot(aes(x = b_fd_freq_30)) +
+  geom_density(fill = "purple", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  labs(
+    title = "Internal Warfare Frequency",
+    x = expression(beta ~ "(Food Destroying Hazard Frequency)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pfd_intrfreq
+```
+
+
+```{r}
+fd_intrfreq_IA <- var_spreads[complete.cases(var_spreads[, c("fd_freq_30_IA", "intrfreq_R")]), ] 
+
+
+ggplot(fd_intrfreq_IA, aes(x = fd_freq_30_IA, y = intrfreq_R)) +
+  geom_jitter(width = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+```{r}
+mod_fd_intrfreq_IA <- brm(
+  formula = intrfreq_R ~ fd_freq_30_IA,
+  data = fd_intrfreq_IA,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),
+    prior(cauchy(0, 1), class = "Intercept")
+  )
+)
+
+summary(mod_fd_intrfreq_IA)
+plot(mod_fd_intrfreq_IA, type = "coef")
+
+conditional_effects_plot <- conditional_effects(mod_fd_intrfreq_IA)
+plot(conditional_effects_plot)
+```
+
+
+```{r}
+hypothesis(mod_fd_intrfreq_IA, "fd_freq_30_IA > 0")
+
+draws2 <- as_draws_df(mod_fd_intrfreq_IA)
+
+pfd_intrfreq_IA <- draws2 %>%
+  ggplot(aes(x = b_fd_freq_30_IA)) +
+  geom_density(fill = "purple", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  labs(
+    title = "Internal Warfare Frequency",
+    x = expression(beta ~ "(Food Destroying Hazard Frequency (IA))"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pfd_intrfreq_IA
+```
+
+
+
+# Non-Food Destroying Hazards (2.5)
+## Overall Warfare
+```{r}
+nonfd_ovfreq <- var_spreads[
+  complete.cases(var_spreads[, c("nonfd_2.5_freq_30", "ovfreq_R")]),
+]
+
+ggplot(nonfd_ovfreq, aes(x = nonfd_2.5_freq_30, y = ovfreq_R)) +
+  geom_jitter(width = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_nonfd_ovfreq <- brm(
+  formula = ovfreq_R ~ nonfd_2.5_freq_30,
+  data = nonfd_ovfreq,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),
+    prior(cauchy(0, 1), class = "Intercept")
+  )
+)
+
+summary(mod_nonfd_ovfreq)
+plot(mod_nonfd_ovfreq, type = "coef")
+
+plot(conditional_effects(mod_nonfd_ovfreq))
+```
+
+```{r}
+hypothesis(mod_nonfd_ovfreq, "nonfd_2.5_freq_30 < 0")
+
+draws2 <- as_draws_df(mod_nonfd_ovfreq)
+
+p_nonfd_ovfreq <- draws2 %>%
+  ggplot(aes(x = b_nonfd_2.5_freq_30)) +
+  geom_density(fill = "blue", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  labs(
+    title = "Overall Warfare Frequency",
+    x = expression(beta ~ "(Non-FD Hazard Frequency)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14)
+
+p_nonfd_ovfreq
+```
+
+```{r}
+nonfd_ovfreq_IA <- var_spreads[
+  complete.cases(var_spreads[, c("nonfd_2.5_freq_30_IA", "ovfreq_R")]),
+]
+
+ggplot(nonfd_ovfreq_IA, aes(x = nonfd_2.5_freq_30_IA, y = ovfreq_R)) +
+  geom_jitter(width = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_nonfd_ovfreq_IA <- brm(
+  formula = ovfreq_R ~ nonfd_2.5_freq_30_IA,
+  data = nonfd_ovfreq_IA,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),
+    prior(cauchy(0, 1), class = "Intercept")
+  )
+)
+
+summary(mod_nonfd_ovfreq_IA)
+plot(mod_nonfd_ovfreq_IA, type = "coef")
+
+plot(conditional_effects(mod_nonfd_ovfreq_IA))
+```
+
+```{r}
+hypothesis(mod_nonfd_ovfreq_IA, "nonfd_2.5_freq_30_IA < 0")
+
+draws2 <- as_draws_df(mod_nonfd_ovfreq_IA)
+
+p_nonfd_ovfreq_IA <- draws2 %>%
+  ggplot(aes(x = b_nonfd_2.5_freq_30_IA)) +
+  geom_density(fill = "blue", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  labs(
+    title = "Overall Warfare Frequency",
+    x = expression(beta ~ "(Non-FD Hazard Frequency (IA))"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14)
+
+p_nonfd_ovfreq_IA
+```
+
+## External Warfare
+```{r}
+nonfd_extfreq <- var_spreads[
+  complete.cases(var_spreads[, c("nonfd_2.5_freq_30", "extfreq_R")]),
+]
+
+ggplot(nonfd_extfreq, aes(x = nonfd_2.5_freq_30, y = extfreq_R)) +
+  geom_jitter(width = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_nonfd_extfreq <- brm(
+  formula = extfreq_R ~ nonfd_2.5_freq_30,
+  data = nonfd_extfreq,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),
+    prior(cauchy(0, 1), class = "Intercept")
+  )
+)
+
+summary(mod_nonfd_extfreq)
+plot(mod_nonfd_extfreq, type = "coef")
+
+plot(conditional_effects(mod_nonfd_extfreq))
+```
+
+```{r}
+hypothesis(mod_nonfd_extfreq, "nonfd_2.5_freq_30 < 0")
+
+draws2 <- as_draws_df(mod_nonfd_extfreq)
+
+p_nonfd_extfreq <- draws2 %>%
+  ggplot(aes(x = b_nonfd_2.5_freq_30)) +
+  geom_density(fill = "blue", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  labs(
+    title = "External Warfare Frequency",
+    x = expression(beta ~ "(Non-FD Hazard Frequency)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14)
+
+p_nonfd_extfreq
+```
+
+
+```{r}
+nonfd_extfreq_IA <- var_spreads[
+  complete.cases(var_spreads[, c("nonfd_2.5_freq_30_IA", "extfreq_R")]),
+]
+
+ggplot(nonfd_extfreq_IA, aes(x = nonfd_2.5_freq_30_IA, y = extfreq_R)) +
+  geom_jitter(width = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_nonfd_extfreq_IA <- brm(
+  formula = extfreq_R ~ nonfd_2.5_freq_30_IA,
+  data = nonfd_extfreq_IA,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),
+    prior(cauchy(0, 1), class = "Intercept")
+  )
+)
+
+summary(mod_nonfd_extfreq_IA)
+plot(mod_nonfd_extfreq_IA, type = "coef")
+
+plot(conditional_effects(mod_nonfd_extfreq_IA))
+```
+
+```{r}
+hypothesis(mod_nonfd_extfreq_IA, "nonfd_2.5_freq_30_IA < 0")
+
+draws2 <- as_draws_df(mod_nonfd_extfreq_IA)
+
+p_nonfd_extfreq_IA <- draws2 %>%
+  ggplot(aes(x = b_nonfd_2.5_freq_30_IA)) +
+  geom_density(fill = "blue", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  labs(
+    title = "External Warfare Frequency",
+    x = expression(beta ~ "(Non-FD Hazard Frequency (IA))"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14)
+
+p_nonfd_extfreq_IA
+```
+
+## Internal Warfare
+```{r}
+nonfd_intrfreq <- var_spreads[
+  complete.cases(var_spreads[, c("nonfd_2.5_freq_30", "intrfreq_R")]),
+]
+
+ggplot(nonfd_intrfreq, aes(x = nonfd_2.5_freq_30, y = intrfreq_R)) +
+  geom_jitter(width = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_nonfd_intrfreq <- brm(
+  formula = intrfreq_R ~ nonfd_2.5_freq_30,
+  data = nonfd_intrfreq,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),
+    prior(cauchy(0, 1), class = "Intercept")
+  )
+)
+
+summary(mod_nonfd_intrfreq)
+plot(mod_nonfd_intrfreq, type = "coef")
+
+plot(conditional_effects(mod_nonfd_intrfreq))
+```
+
+```{r}
+hypothesis(mod_nonfd_intrfreq, "nonfd_2.5_freq_30 < 0")
+
+draws2 <- as_draws_df(mod_nonfd_intrfreq)
+
+p_nonfd_intrfreq <- draws2 %>%
+  ggplot(aes(x = b_nonfd_2.5_freq_30)) +
+  geom_density(fill = "blue", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  labs(
+    title = "Internal Warfare Frequency",
+    x = expression(beta ~ "(Non-FD Hazard Frequency)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14)
+
+p_nonfd_intrfreq
+```
+
+```{r}
+nonfd_intrfreq_IA <- var_spreads[
+  complete.cases(var_spreads[, c("nonfd_2.5_freq_30_IA", "intrfreq_R")]),
+]
+
+ggplot(nonfd_intrfreq_IA, aes(x = nonfd_2.5_freq_30_IA, y = intrfreq_R)) +
+  geom_jitter(width = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_nonfd_intrfreq_IA <- brm(
+  formula = intrfreq_R ~ nonfd_2.5_freq_30_IA,
+  data = nonfd_intrfreq_IA,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),
+    prior(cauchy(0, 1), class = "Intercept")
+  )
+)
+
+summary(mod_nonfd_intrfreq_IA)
+plot(mod_nonfd_intrfreq_IA, type = "coef")
+
+plot(conditional_effects(mod_nonfd_intrfreq_IA))
+```
+
+```{r}
+hypothesis(mod_nonfd_intrfreq_IA, "nonfd_2.5_freq_30_IA < 0")
+
+draws2 <- as_draws_df(mod_nonfd_intrfreq_IA)
+
+p_nonfd_intrfreq_IA <- draws2 %>%
+  ggplot(aes(x = b_nonfd_2.5_freq_30_IA)) +
+  geom_density(fill = "blue", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  labs(
+    title = "Internal Warfare Frequency",
+    x = expression(beta ~ "(Non-FD Hazard Frequency (IA))"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14)
+
+p_nonfd_intrfreq_IA
+```
+
+
+# Non-Food Destroying Hazards (2)
+## Overall Warfare
+```{r}
+nonfd_ovfreq2 <- var_spreads[
+  complete.cases(var_spreads[, c("nonfd_2_freq_30", "ovfreq_R")]),
+]
+
+ggplot(nonfd_ovfreq2, aes(x = nonfd_2_freq_30, y = ovfreq_R)) +
+  geom_jitter(width = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_nonfd_ovfreq2 <- brm(
+  formula = ovfreq_R ~ nonfd_2_freq_30,
+  data = nonfd_ovfreq2,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),
+    prior(cauchy(0, 1), class = "Intercept")
+  )
+)
+
+summary(mod_nonfd_ovfreq2)
+plot(mod_nonfd_ovfreq2, type = "coef")
+
+plot(conditional_effects(mod_nonfd_ovfreq2))
+```
+
+```{r}
+hypothesis(mod_nonfd_ovfreq2, "nonfd_2_freq_30 < 0")
+
+draws2 <- as_draws_df(mod_nonfd_ovfreq2)
+
+p_nonfd_ovfreq2 <- draws2 %>%
+  ggplot(aes(x = b_nonfd_2_freq_30)) +
+  geom_density(fill = "blue", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  labs(
+    title = "Overall Warfare Frequency",
+    x = expression(beta ~ "(Non-FD Hazard Frequency (FD < 2))"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14)
+
+p_nonfd_ovfreq2
+```
+
+```{r}
+nonfd_ovfreq2_IA <- var_spreads[
+  complete.cases(var_spreads[, c("nonfd_2_freq_30_IA", "ovfreq_R")]),
+]
+
+ggplot(nonfd_ovfreq2_IA, aes(x = nonfd_2_freq_30_IA, y = ovfreq_R)) +
+  geom_jitter(width = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_nonfd_ovfreq2_IA <- brm(
+  formula = ovfreq_R ~ nonfd_2_freq_30_IA,
+  data = nonfd_ovfreq2_IA,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),
+    prior(cauchy(0, 1), class = "Intercept")
+  )
+)
+
+summary(mod_nonfd_ovfreq2_IA)
+plot(mod_nonfd_ovfreq2_IA, type = "coef")
+
+plot(conditional_effects(mod_nonfd_ovfreq2_IA))
+```
+
+```{r}
+hypothesis(mod_nonfd_ovfreq2_IA, "nonfd_2_freq_30_IA < 0")
+
+draws2 <- as_draws_df(mod_nonfd_ovfreq2_IA)
+
+p_nonfd_ovfreq2_IA <- draws2 %>%
+  ggplot(aes(x = b_nonfd_2_freq_30_IA)) +
+  geom_density(fill = "blue", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  labs(
+    title = "Overall Warfare Frequency",
+    x = expression(beta ~ "(Non-FD Hazard Frequency (IA; FD < 2))"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14)
+
+p_nonfd_ovfreq2_IA
+```
+
+## External Warfare
+```{r}
+nonfd_extfreq2 <- var_spreads[
+  complete.cases(var_spreads[, c("nonfd_2_freq_30", "extfreq_R")]),
+]
+
+ggplot(nonfd_extfreq2, aes(x = nonfd_2_freq_30, y = extfreq_R)) +
+  geom_jitter(width = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_nonfd_extfreq2 <- brm(
+  formula = extfreq_R ~ nonfd_2_freq_30,
+  data = nonfd_extfreq2,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),
+    prior(cauchy(0, 1), class = "Intercept")
+  )
+)
+
+summary(mod_nonfd_extfreq2)
+plot(mod_nonfd_extfreq2, type = "coef")
+
+plot(conditional_effects(mod_nonfd_extfreq2))
+```
+
+```{r}
+hypothesis(mod_nonfd_extfreq2, "nonfd_2_freq_30 < 0")
+
+draws2 <- as_draws_df(mod_nonfd_extfreq2)
+
+p_nonfd_extfreq2 <- draws2 %>%
+  ggplot(aes(x = b_nonfd_2_freq_30)) +
+  geom_density(fill = "blue", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  labs(
+    title = "External Warfare Frequency",
+    x = expression(beta ~ "(Non-FD Hazard Frequency (FD < 2))"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14)
+
+p_nonfd_extfreq2
+```
+
+
+```{r}
+nonfd_extfreq2_IA <- var_spreads[
+  complete.cases(var_spreads[, c("nonfd_2_freq_30_IA", "extfreq_R")]),
+]
+
+ggplot(nonfd_extfreq2_IA, aes(x = nonfd_2_freq_30_IA, y = extfreq_R)) +
+  geom_jitter(width = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_nonfd_extfreq2_IA <- brm(
+  formula = extfreq_R ~ nonfd_2_freq_30_IA,
+  data = nonfd_extfreq2_IA,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),
+    prior(cauchy(0, 1), class = "Intercept")
+  )
+)
+
+summary(mod_nonfd_extfreq2_IA)
+plot(mod_nonfd_extfreq2_IA, type = "coef")
+
+plot(conditional_effects(mod_nonfd_extfreq2_IA))
+```
+
+```{r}
+hypothesis(mod_nonfd_extfreq2_IA, "nonfd_2_freq_30_IA < 0")
+
+draws2 <- as_draws_df(mod_nonfd_extfreq2_IA)
+
+p_nonfd_extfreq2_IA <- draws2 %>%
+  ggplot(aes(x = b_nonfd_2_freq_30_IA)) +
+  geom_density(fill = "blue", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  labs(
+    title = "External Warfare Frequency",
+    x = expression(beta ~ "(Non-FD Hazard Frequency (IA; FD < 2))"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14)
+
+p_nonfd_extfreq_IA
+```
+
+## Internal Warfare
+```{r}
+nonfd_intrfreq2 <- var_spreads[
+  complete.cases(var_spreads[, c("nonfd_2_freq_30", "intrfreq_R")]),
+]
+
+ggplot(nonfd_intrfreq2, aes(x = nonfd_2_freq_30, y = intrfreq_R)) +
+  geom_jitter(width = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_nonfd_intrfreq2 <- brm(
+  formula = intrfreq_R ~ nonfd_2_freq_30,
+  data = nonfd_intrfreq2,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),
+    prior(cauchy(0, 1), class = "Intercept")
+  )
+)
+
+summary(mod_nonfd_intrfreq2)
+plot(mod_nonfd_intrfreq2, type = "coef")
+
+plot(conditional_effects(mod_nonfd_intrfreq2))
+```
+
+```{r}
+hypothesis(mod_nonfd_intrfreq2, "nonfd_2_freq_30 < 0")
+
+draws2 <- as_draws_df(mod_nonfd_intrfreq2)
+
+p_nonfd_intrfreq2 <- draws2 %>%
+  ggplot(aes(x = b_nonfd_2_freq_30)) +
+  geom_density(fill = "blue", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  labs(
+    title = "Internal Warfare Frequency",
+    x = expression(beta ~ "(Non-FD Hazard Frequency (FD < 2) )"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14)
+
+p_nonfd_intrfreq2
+```
+
+```{r}
+nonfd_intrfreq2_IA <- var_spreads[
+  complete.cases(var_spreads[, c("nonfd_2_freq_30_IA", "intrfreq_R")]),
+]
+
+ggplot(nonfd_intrfreq2_IA, aes(x = nonfd_2_freq_30_IA, y = intrfreq_R)) +
+  geom_jitter(width = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_nonfd_intrfreq2_IA <- brm(
+  formula = intrfreq_R ~ nonfd_2_freq_30_IA,
+  data = nonfd_intrfreq2_IA,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),
+    prior(cauchy(0, 1), class = "Intercept")
+  )
+)
+
+summary(mod_nonfd_intrfreq2_IA)
+plot(mod_nonfd_intrfreq2_IA, type = "coef")
+
+plot(conditional_effects(mod_nonfd_intrfreq2_IA))
+```
+
+```{r}
+hypothesis(mod_nonfd_intrfreq2_IA, "nonfd_2_freq_30_IA < 0")
+
+draws2 <- as_draws_df(mod_nonfd_intrfreq2_IA)
+
+p_nonfd_intrfreq2_IA <- draws2 %>%
+  ggplot(aes(x = b_nonfd_2_freq_30_IA)) +
+  geom_density(fill = "blue", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  labs(
+    title = "Internal Warfare Frequency",
+    x = expression(beta ~ "(Non-FD Hazard Frequency (IA; FD < 2))"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14)
+
+p_nonfd_intrfreq2_IA
+```
+
+
+
+# OUTDATED
+
+```{r}
+ggplot(var_spreads, aes(x = ovfreq_R , y = allhazards_ )) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+```
+
+```{r}
+nonfd_ovfreq <- ds[complete.cases(ds[, c("allhazards_", "ovfreq_R")]), ] 
+
+nonfd_ovfreq <- nonfd_ovfreq %>%
+  filter(State == "No" & newpac_R < 3)
+```
+
+```{r}
+ggplot(nonfd_ovfreq, aes(x = ovfreq_R, y = nonfd_2_freq_30)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+# sensitivity analysis
+nonfd_ovfreq$z_sev <- scale(nonfd_ovfreq$nonfd_2_freq_30)
+
+nonfd_ovfreq_trim <- nonfd_ovfreq[abs(nonfd_ovfreq$z_sev) <= 2, ]
+
+
+ggplot(nonfd_ovfreq_trim, aes(x = ovfreq_R, y = nonfd_2_freq_30)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_fd_ovfreq <- brm(
+  formula = ovfreq_R ~ fd_freq_30_IA,
+  data = fd_ovfreq,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(cauchy(0, 1), class = "Intercept")  # Weakly informative Cauchy prior for the intercept
+  )
+)
+
+summary(mod_fd_ovfreq)
+plot(mod_fd_ovfreq, type = "coef")
+
+conditional_effects_plot <- conditional_effects(mod_fd_ovfreq)
+plot(conditional_effects_plot)
+```
+
+```{r}
+# in the our better nature paper, daily food sharing was negatively associated with food destroying hazards
+hypothesis(mod_fd_ovfreq, "fd_freq_30_IA > 0") # they do!
+
+draws2 <- as_draws_df(mod_fd_ovfreq)
+
+# Plot for Sev
+pfd_ovfreq <- draws2 %>%
+  ggplot(aes(x = b_fd_freq_30_IA)) +
+  geom_density(fill = "purple", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  labs(
+    title = "Overall Warfare Frequency",
+    x = expression(beta ~ "(Food Destroying Hazard Frequency)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pfd_ovfreq
+```
+
+## extfreq_R
+
+```{r}
+fd_extfreq <- ds[complete.cases(ds[, c("disaster_h9a_sev_exposure_30_IA", "extfreq_R")]), ]
+
+fd_extfreq <- fd_extfreq %>%
+  mutate(
+    extfreq_rebin = case_when(
+      extfreq_R < 2 ~ "Rare",
+      extfreq_R < 4 ~ "Occasional",
+      TRUE          ~ "Frequent"
+    ),
+    extfreq_rebin_large = case_when(
+      extfreq_R < 1.75 ~ "Rare/Absent",
+      extfreq_R < 2.75 ~ "Low (3–10 yrs)",
+      extfreq_R < 3.75 ~ "Moderate (~2 yrs)",
+      extfreq_R < 4.5  ~ "Seasonal yearly",
+      TRUE             ~ "Constant"
+    )
+  ) %>%
+  mutate(
+    extfreq_rebin = factor(
+      extfreq_rebin,
+      levels = c("Rare", "Occasional", "Frequent"),
+      ordered = TRUE
+    ),
+    extfreq_rebin_large = factor(
+      extfreq_rebin_large,
+      levels = c(
+        "Rare/Absent",
+        "Low (3–10 yrs)",
+        "Moderate (~2 yrs)",
+        "Seasonal yearly",
+        "Constant"
+      ),
+      ordered = TRUE
+    )
+  )
+
+
+ggplot(fd_extfreq, aes(x = extfreq_rebin, y = disaster_h9a_sev_exposure_30_IA)) +
+  geom_boxplot()
+
+```
+
+```{r}
+ggplot(fd_extfreq, aes(x = disaster_h9a_sev_exposure_30_IA, y = extfreq_R)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+# sensitivity analysis
+fd_extfreq$z_sev <- scale(fd_extfreq$disaster_h9a_sev_exposure_30_IA)
+
+fd_extfreq_trim <- fd_extfreq[abs(fd_extfreq$z_sev) <= 2, ]
+
+
+ggplot(fd_extfreq_trim, aes(x = disaster_h9a_sev_exposure_30_IA, y = extfreq_R)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+```
+
+Really not seeing any sort of relationship here and it's a bit hard to decipher given the scaling of the warfare variables.
+
+## Intrfreq
+```{r}
+fd_intrfreq <- ds[complete.cases(ds[, c("disaster_h9a_sev_exposure_30_IA", "intrfreq_R")]), ]
+```
+
+```{r}
+ggplot(fd_intrfreq, aes(x = disaster_h9a_sev_exposure_30_IA, y = intrfreq_R)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+# sensitivity analysis
+fd_intrfreq$z_sev <- scale(fd_intrfreq$disaster_h9a_sev_exposure_30_IA)
+
+fd_intrfreq_trim <- fd_intrfreq[abs(fd_intrfreq$z_sev) <= 2, ]
+
+
+ggplot(fd_intrfreq_trim, aes(x = disaster_h9a_sev_exposure_30_IA, y = intrfreq_R)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+```
+
+```{r}
+mod_fd_intrfreq <- brm(
+  formula = intrfreq_R ~ disaster_h9a_sev_exposure_30_IA,
+  data = fd_intrfreq_trim,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(cauchy(0, 1), class = "Intercept")  # Weakly informative Cauchy prior for the intercept
+  )
+)
+
+summary(mod_fd_intrfreq)
+plot(mod_fd_intrfreq, type = "coef")
+
+conditional_effects_plot <- conditional_effects(mod_fd_intrfreq)
+plot(conditional_effects_plot)
+```
+
+```{r}
+# in the our better nature paper, daily food sharing was negatively associated with food destroying hazards
+hypothesis(mod_fd_intrfreq, "disaster_h9a_sev_exposure_30_IA < 0") # they do!
+
+draws2 <- as_draws_df(mod_fd_intrfreq)
+
+# Plot for Sev
+pfd_intrfreq <- draws2 %>%
+  ggplot(aes(x = b_disaster_h9a_sev_exposure_30_IA)) +
+  geom_density(fill = "purple", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  labs(
+    title = "Overall Warfare Frequency",
+    x = expression(beta ~ "(Severity Exposure to Food Destroying Hazards)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pfd_intrfreq
+```
+
+

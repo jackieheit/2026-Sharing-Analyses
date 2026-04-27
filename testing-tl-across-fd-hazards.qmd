@@ -5,6 +5,7 @@ format: html
 
 ```{r}
 library(tidyverse)
+library(brms)
 
 ds_FA <- read_csv("sharing-dataset-for-analysis.csv")
 
@@ -18,21 +19,21 @@ ds <- full_join(ds_FA, tl, by = c("OWC"))
 
 # Food destroying
 ```{r}
-fd_tl <- ds[complete.cases(ds[, c("disaster_h9a_sev_exposure_30", "General_TL5B_pref_final")]), ]
+fd_tl <- ds[complete.cases(ds[, c("disaster_h9a_sev_exposure_30_IA", "General_TL5B_pref_final")]), ]
 ```
 
 ```{r}
-ggplot(fd_tl, aes(x = disaster_h9a_sev_exposure_30, y = General_TL5B_pref_final)) +
+ggplot(fd_tl, aes(x = disaster_h9a_sev_exposure_30_IA, y = General_TL5B_pref_final)) +
   geom_jitter(height = 0.05, alpha = 0.6) +
   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
 
 # sensitivity analysis
-fd_tl$z_sev <- scale(fd_tl$disaster_h9a_sev_exposure_30)
+fd_tl$z_sev <- scale(fd_tl$disaster_h9a_sev_exposure_30_IA)
 
 fd_tl_trim <- fd_tl[abs(fd_tl$z_sev) <= 2, ]
 
 
-ggplot(fd_tl_trim, aes(x = disaster_h9a_sev_exposure_30, y = General_TL5B_pref_final)) +
+ggplot(fd_tl_trim, aes(x = disaster_h9a_sev_exposure_30_IA, y = General_TL5B_pref_final)) +
   geom_jitter(height = 0.05, alpha = 0.6) +
   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
 ```
@@ -46,7 +47,7 @@ fd_tl_trim <- fd_tl_trim %>%
 
 
 mod_fd_tl <- brm(
-  formula = General_TL5B_pref_final ~ disaster_h9a_sev_exposure_30 + mo(ea033),
+  formula = General_TL5B_pref_final ~ disaster_h9a_sev_exposure_30_IA + mo(ea033),
   data = fd_tl_trim,
   family = cumulative(link = "logit"),
   chains = 4,
@@ -102,13 +103,13 @@ ggplot(fd_tl_bp, aes(x = tl_bin, y = disaster_h9a_sev_exposure_30)) +
 
 ```{r}
 # in the our better nature paper, there was a positive relationship between seasonal food sharing and severe non-fd hazards
-hypothesis(mod_fd_tl, "disaster_h9a_sev_exposure_30 < 0") # they do!
+hypothesis(mod_fd_tl, "disaster_h9a_sev_exposure_30_IA < 0") # they do!
 
 drawsfd <- as_draws_df(mod_fd_tl)
 
 # Plot for Sev
 pfd_tl <- drawsfd %>%
-  ggplot(aes(x = b_disaster_h9a_sev_exposure_30)) +
+  ggplot(aes(x = b_disaster_h9a_sev_exposure_30_IA)) +
   geom_density(fill = "mediumseagreen", alpha = 0.7) +
   geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
   labs(
@@ -137,12 +138,12 @@ ggplot(sevnfd_tl, aes(x = disaster_nonfd_sev_exposure_30_IA, y = General_TL5B_pr
   geom_smooth(method = "lm", se = FALSE, color = "#66c2a4")
 
 # sensitivity analysis
-sevnfd_tl$z_sev <- scale(sevnfd_tl$sevnonfd_freq_30_IA)
+sevnfd_tl$z_sev <- scale(sevnfd_tl$disaster_nonfd_sev_exposure_30_IA)
 
 sevnfd_tl_trim <- sevnfd_tl[abs(sevnfd_tl$z_sev) <= 2, ]
 
 
-ggplot(sevnfd_tl_trim, aes(x = sevnonfd_freq_30_IA, y = General_TL5B_pref_final)) +
+ggplot(sevnfd_tl_trim, aes(x = disaster_nonfd_sev_exposure_30_IA, y = General_TL5B_pref_final)) +
   geom_jitter(height = 0.05, alpha = 0.6) +
   geom_smooth(method = "lm", se = FALSE, color = "#66c2a4")
 ```
@@ -156,7 +157,7 @@ sevnfd_tl_trim <- sevnfd_tl_trim %>%
 
 
 mod_sevnfd_tl <- brm(
-  formula = General_TL5B_pref_final ~ sevnonfd_freq_30_IA,
+    formula = General_TL5B_pref_final ~ disaster_nonfd_sev_exposure_30_IA + mo(ea033),
   data = sevnfd_tl_trim,
   family = cumulative(link = "logit"),
   chains = 4,
@@ -170,6 +171,7 @@ mod_sevnfd_tl <- brm(
 
 summary(mod_sevnfd_tl)
 ```
+
 ```{r}
 # plot(mod_fd_tl, type = "coef")
 
@@ -178,14 +180,14 @@ c_effects_plot
 ```
 
 ```{r}
-# in the our better nature paper, there was a positive relationship between seasonal food sharing and severe non-fd hazards
-hypothesis(mod_sevnfd_tl, "sevnonfd_freq_30_IA > 0") # they do!
+
+hypothesis(mod_sevnfd_tl, "disaster_nonfd_sev_exposure_30_IA > 0")
 
 draws_sevnfd <- as_draws_df(mod_sevnfd_tl)
 
 # Plot for Sev
 psevnfd_tl <- draws_sevnfd %>%
-  ggplot(aes(x = b_sevnonfd_freq_30_IA)) +
+  ggplot(aes(x = b_disaster_nonfd_sev_exposure_30_IA)) +
   geom_density(fill = "mediumseagreen", alpha = 0.7) +
   geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
   labs(

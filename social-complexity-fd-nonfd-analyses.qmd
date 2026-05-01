@@ -1,0 +1,569 @@
+---
+title: "social-complexity-fd-nonfd-analyses"
+format: html
+---
+
+```{r}
+library(tidyverse)
+library(brms)
+
+ds_FA <- read_csv("sharing-dataset-for-analysis.csv")
+
+sc <- read_csv("data/EA-societal-complexity-variables-qc-minerva-sample.csv")
+
+
+ds <- full_join(ds_FA, sc, by = c("ID", "OWC"))
+
+wf <- read_csv("../minerva/Warfare/Upstream/DT-WarfareViolence-Combined-Clean.csv") %>%
+  mutate(
+    OWC = str_trim(OWC, side = c("both")),
+    State = str_trim(State, side = c("both"))
+  )
+
+
+ds_nostate <- full_join(ds, wf, by = c("ID", "OWC"))
+
+ds_nostate <- ds_nostate %>%
+  filter(State == "No")
+
+ggplot(ds_nostate, aes(x = nonfd_2_freq_30 , y = class_strat)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+
+```
+
+
+# hierarchy beyond community
+
+```{r}
+ggplot(ds, aes(x = nonfd_2_freq_30 , y = hier_beyond_com)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = nonfd_2.5_freq_30 , y = hier_beyond_com)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = allhazards_nonfd_sev_exposure2_30 , y = hier_beyond_com)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = allhazards_nonfd_sev_exposure2.5_30 , y = hier_beyond_com)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = disaster_nonfd_sev_exposure2_30 , y = hier_beyond_com)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = disaster_nonfd_sev_exposure2.5_30 , y = hier_beyond_com)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = normative_est_count_30.x , y = hier_beyond_com)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+```
+```{r}
+ggplot(ds, aes(x = nonfd_2_freq_30_IA , y = hier_beyond_com)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = nonfd_2.5_freq_30_IA , y = hier_beyond_com)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = allhazards_nonfd_sev_exposure2_30_IA , y = hier_beyond_com)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = allhazards_nonfd_sev_exposure2.5_30_IA, y = hier_beyond_com)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = disaster_nonfd_sev_exposure2_30_IA , y = hier_beyond_com)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = disaster_nonfd_sev_exposure2.5_30_IA , y = hier_beyond_com)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+
+```{r}
+ggplot(ds, aes(x = fd_freq_30 , y = hier_beyond_com)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = allhazards_H9a_sev_exposure_30 , y = hier_beyond_com)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = disaster_h9a_sev_exposure_30 , y = hier_beyond_com)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+```
+
+
+```{r}
+ggplot(ds, aes(x = fd_freq_30_IA , y = hier_beyond_com)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = allhazards_H9a_sev_exposure_30_IA, y = hier_beyond_com)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = disaster_h9a_sev_exposure_30_IA, y = hier_beyond_com)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+## Nonfd (Cutoff <2 for food destroying severity)
+```{r}
+ds$nonfd_2_freq_30_z <- scale(ds$nonfd_2_freq_30)
+
+nonfd_ea033 <- ds[complete.cases(ds[, c("nonfd_2_freq_30_z", "hier_beyond_com")]), ] 
+
+
+ggplot(nonfd_ea033, aes(x = nonfd_2_freq_30_z , y = hier_beyond_com)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_nonfd_ea033 <- brm(
+  formula = hier_beyond_com ~ nonfd_2_freq_30_z,
+  data = nonfd_ea033,
+  family = cumulative(link = "logit"),  # ordinal outcome
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 1), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(cauchy(0, 1), class = "Intercept")  # Weakly informative Cauchy prior for the intercept
+  )
+)
+
+summary(mod_nonfd_ea033)
+plot(mod_nonfd_ea033, type = "coef")
+
+conditional_effects_plot <- conditional_effects(mod_nonfd_ea033)
+plot(conditional_effects_plot)
+```
+
+## Nonfd (Cutoff < 2.5 for food destroying severity)
+```{r}
+ds$nonfd_2.5_freq_30_z <- scale(ds$nonfd_2.5_freq_30)
+
+nonfd_2.5_ea033 <- ds[complete.cases(ds[, c("nonfd_2.5_freq_30_z", "hier_beyond_com")]), ] 
+
+ggplot(nonfd_2.5_ea033, aes(x = nonfd_2.5_freq_30_z , y = hier_beyond_com)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_nonfd_2.5_ea033 <- brm(
+  formula = hier_beyond_com ~ nonfd_2.5_freq_30_z,
+  data = nonfd_2.5_ea033,
+  family = cumulative(link = "logit"),  # ordinal outcome
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 1), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(student_t(3, 0, 2.5), class = "Intercept")  # better than cauchy here
+  )
+)
+
+summary(mod_nonfd_2.5_ea033)
+```
+
+## Food destroying
+
+```{r}
+hist(ds$fd_freq_30)
+
+ds$fd_freq_30_z <- scale(ds$fd_freq_30)
+
+fd_ea033 <- ds[complete.cases(ds[, c("fd_freq_30_z", "hier_beyond_com")]), ] 
+
+ggplot(fd_ea033, aes(x = fd_freq_30_z , y = hier_beyond_com)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_fd_ea033 <- brm(
+  formula = hier_beyond_com ~ fd_freq_30_z,
+  data = fd_ea033,
+  family = cumulative(link = "logit"),  # ordinal outcome
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 1), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(student_t(3, 0, 2.5), class = "Intercept")
+  )
+)
+
+summary(mod_fd_ea033)
+```
+
+# Class Strattification 
+
+```{r}
+ggplot(ds, aes(x = nonfd_2_freq_30 , y = class_strat)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = nonfd_2.5_freq_30 , y = class_strat)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = allhazards_nonfd_sev_exposure2_30 , y = class_strat)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = allhazards_nonfd_sev_exposure2.5_30 , y = class_strat)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = disaster_nonfd_sev_exposure2_30 , y = class_strat)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = disaster_nonfd_sev_exposure2.5_30 , y = class_strat)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+```
+
+```{r}
+ggplot(ds, aes(x = nonfd_2_freq_30_IA , y = class_strat)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = nonfd_2.5_freq_30_IA , y = class_strat)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = allhazards_nonfd_sev_exposure2_30_IA , y = class_strat)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = allhazards_nonfd_sev_exposure2.5_30_IA, y = class_strat)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = disaster_nonfd_sev_exposure2_30_IA , y = class_strat)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = disaster_nonfd_sev_exposure2.5_30_IA , y = class_strat)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+ggplot(ds, aes(x = fd_freq_30 , y = class_strat)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = allhazards_H9a_sev_exposure_30 , y = class_strat)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = disaster_h9a_sev_exposure_30 , y = class_strat)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+ggplot(ds, aes(x = fd_freq_30_IA , y = class_strat)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = allhazards_H9a_sev_exposure_30_IA , y = class_strat)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = disaster_h9a_sev_exposure_30_IA , y = class_strat)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+## Nonfd (Cutoff <2 for food destroying severity)
+```{r}
+nonfd_class <- ds[complete.cases(ds[, c("nonfd_2_freq_30_z", "class_strat")]), ] 
+
+
+ggplot(nonfd_class, aes(x = nonfd_2_freq_30_z , y = class_strat)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_nonfd_class <- brm(
+  formula = class_strat ~ nonfd_2_freq_30_z,
+  data = nonfd_class,
+  family = cumulative(link = "logit"),  # ordinal outcome
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 1), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(cauchy(0, 1), class = "Intercept")  # Weakly informative Cauchy prior for the intercept
+  )
+)
+
+summary(mod_nonfd_class)
+```
+
+## Nonfd (Cutoff < 2.5 for food destroying severity)
+```{r}
+nonfd_2.5_class <- ds[complete.cases(ds[, c("nonfd_2.5_freq_30_z", "class_strat")]), ] 
+
+ggplot(nonfd_2.5_class, aes(x = nonfd_2.5_freq_30_z , y = class_strat)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_nonfd_2.5_class <- brm(
+  formula = class_strat ~ nonfd_2.5_freq_30_z,
+  data = nonfd_2.5_class,
+  family = cumulative(link = "logit"),  # ordinal outcome
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 1), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(student_t(3, 0, 2.5), class = "Intercept")  # better than cauchy here
+  )
+)
+
+summary(mod_nonfd_2.5_class)
+```
+
+## Food destroying
+
+```{r}
+fd_class <- ds[complete.cases(ds[, c("fd_freq_30_z", "class_strat")]), ] 
+
+ggplot(fd_class, aes(x = fd_freq_30_z , y = class_strat)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_fd_class <- brm(
+  formula = class_strat ~ fd_freq_30_z,
+  data = fd_class,
+  family = cumulative(link = "logit"),  # ordinal outcome
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 1), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(student_t(3, 0, 2.5), class = "Intercept")
+  )
+)
+
+summary(mod_fd_class)
+```
+
+# community size
+
+```{r}
+ggplot(ds, aes(x = nonfd_2_freq_30 , y = community_size)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = nonfd_2.5_freq_30 , y = community_size)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = allhazards_nonfd_sev_exposure2_30 , y = community_size)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = allhazards_nonfd_sev_exposure2.5_30 , y = community_size)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = disaster_nonfd_sev_exposure2_30 , y = community_size)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = disaster_nonfd_sev_exposure2.5_30 , y = community_size)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+```
+
+```{r}
+ggplot(ds, aes(x = nonfd_2_freq_30_IA , y = community_size)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = nonfd_2.5_freq_30_IA , y = community_size)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = allhazards_nonfd_sev_exposure2_30_IA , y = community_size)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = allhazards_nonfd_sev_exposure2.5_30_IA , y = community_size)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = disaster_nonfd_sev_exposure2_30_IA , y = community_size)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = disaster_nonfd_sev_exposure2.5_30_IA , y = community_size)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+ggplot(ds, aes(x = fd_freq_30, y = community_size)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = allhazards_H9a_sev_exposure_30, y = community_size)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = disaster_h9a_sev_exposure_30, y = community_size)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+ggplot(ds, aes(x = fd_freq_30_IA , y = community_size)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = allhazards_H9a_sev_exposure_30_IA, y = community_size)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = disaster_h9a_sev_exposure_30_IA , y = community_size)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+## Nonfd (Cutoff <2 for food destroying severity)
+```{r}
+nonfd_size <- ds[complete.cases(ds[, c("nonfd_2_freq_30_z", "community_size")]), ] 
+
+
+ggplot(nonfd_size, aes(x = nonfd_2_freq_30_z , y = community_size)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+nonfd_size_IA <- ds[complete.cases(ds[, c("nonfd_2_freq_30_IA", "community_size")]), ] 
+
+
+ggplot(nonfd_size_IA, aes(x = nonfd_2_freq_30_IA , y = community_size)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_nonfd_2_size_IA <- brm(
+  formula = community_size ~ nonfd_2_freq_30_IA,
+  data = nonfd_size_IA,
+  family = cumulative(link = "logit"),  # ordinal outcome
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 1), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(student_t(3, 0, 2.5), class = "Intercept")  # better than cauchy here
+  )
+)
+
+summary(mod_nonfd_2_size_IA)
+
+hypothesis(mod_nonfd_2_size_IA, "nonfd_2_freq_30_IA > 0")
+
+draws2 <- as_draws_df(mod_nonfd_2_size_IA)
+
+p_nonfd_comsize <- draws2 %>%
+  ggplot(aes(x = b_nonfd_2_freq_30_IA)) +
+  geom_density(fill = "pink", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  labs(
+    title = "Community Size",
+    x = expression(beta ~ "(Non-FD Hazard Frequency)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14)
+
+p_nonfd_comsize
+```
+
+
+## Nonfd (Cutoff < 2.5 for food destroying severity)
+```{r}
+nonfd_2.5_size <- ds[complete.cases(ds[, c("nonfd_2.5_freq_30_z", "community_size")]), ] 
+
+ggplot(nonfd_2.5_size, aes(x = nonfd_2.5_freq_30_z , y = community_size)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_nonfd_2.5_size <- brm(
+  formula = community_size ~ nonfd_2.5_freq_30_z,
+  data = nonfd_2.5_size,
+  family = cumulative(link = "logit"),  # ordinal outcome
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 1), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(student_t(3, 0, 2.5), class = "Intercept")  # better than cauchy here
+  )
+)
+
+summary(mod_nonfd_2.5_size)
+```
+
+## Food destroying
+
+```{r}
+fd_size <- ds[complete.cases(ds[, c("fd_freq_30_z", "community_size")]), ] 
+
+ggplot(fd_size, aes(x = fd_freq_30_z , y = community_size)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+mod_fd_size <- brm(
+  formula = community_size ~ fd_freq_30_z,
+  data = fd_size,
+  family = cumulative(link = "logit"),  # ordinal outcome
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 1), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(student_t(3, 0, 2.5), class = "Intercept")
+  )
+)
+
+summary(mod_fd_size)
+```

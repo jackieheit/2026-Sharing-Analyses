@@ -1,0 +1,133 @@
+eHRAF.Name,OWC,ID,SCCS.ID,EA.ID,Society,NAME,hier_beyond_com,intensity_agricult,class_strat,community_size,SCCS.EA.concordance,EP.Used,Place.Focus.Used,Region
+Khoi,FX13,1,1,Aa03,NA,nama Hottentot,2,1,2,3,,1860,Gei/Khauan tribe.,Africa
+San,FX10,2,2,Aa01,San,Kung Bushmen,1,1,1,1,Y,1950,"Nyae Nyae region, Namibia",Africa
+Lozi,FQ09,4,4,Ab03,Lozi,Lozi,4,5,4,2,Y,1900,Ruling Luyana,Africa
+Ovimbundu,FP13,5,5,Ab05,Ovimbundu,Mbundu,3,3,4,4,,1890,Not specified,Africa
+Bemba,FQ05,7,7,Ac03,Bemba,Bemba,3,3,4,3,Y,1897,Zambia branch,Africa
+Nyakyusa and Ngonde,FN17,8,8,Ad06,NA,Nyakyusa,3,5,1,3,Y,1934,Age Villages nearMwaya and Masoko,Africa
+Ganda,FK07,12,12,Ad07,NA,Ganda,4,5,4,7,Y,1875,Kyaddondo District around Kampala,Africa
+Mbuti,FO04,13,13,Aa05,Mbuti,Mbuti,1,1,1,3,,1950,Epulu net hunters of the Ituri Forest,Africa
+Tiv,FF57,16,16,Ah03,Tiv,Tiv,2,3,1,4,Y,1920,Benue province,Africa
+Akan,FE12,19,19,Af03,Akan,Ashanti,3,3,4,7,Y,1895,Kumasi state,Africa
+Wolof,MS30,21,21,Cb02,Wolof,Wolof,3,3,5,8,Y,1950,"Upper and Lower Salum, Gambia",Middle East
+Bambara,FA08,22,22,Ag01,NA,Bambara,2,5,4,7,,1902,Segou to Bamako on the Niger River,Africa
+Tallensi,FE11,23,23,Ag04,NA,Tallensi,1,5,2,5,Y,1934,"Entirety of tribe (Tongo Village, Ghana)",Africa
+Songhai,MS20,24,24,Cb03,NA,Songhai,4,5,5,7,Y,1940,Bamba division,Middle East
+Fulani,MS11,25,25,Cb24,NA,Pastoral Fulani,2,2,1,3,Y,1951,Wodaabe of Niger,Middle East
+Hausa,MS12,26,26,Cb26,Hausa,Hausa,4,6,5,8,,1900,Zazzagawa of Zaria,Middle East
+Masa,FI21,27,27,Ai09,NA,Massa (Masa),1,6,1,4,Y,1910,"Around Yagoua, in Cameroon",Africa
+Azande,FO07,28,28,Ai03,Azande,Azande,3,3,4,3,,1905,Yambio chiefdom,Africa
+Fur,MQ08,29,29,Cb17,NA,Fur (Darfur),4,5,4,3,Y,1880,Jebel Marra,Middle East
+Nuba,FJ21,30,30,Ai10,NA,Otoro Nuba,2,5,2,5,Y,1930,"Entirety, Nuba Hills Otoro",Africa
+Mao,MP19,32,32,Ai47,NA,Mao,2,3,1,2,Y,1939,Northern division,Middle East
+Maasai,FL12,34,34,Aj02,Maasai,Masai,2,1,1,4,Y,1900,Not specified,Africa
+Konso,MP17,35,35,Ca01,NA,Konso,1,5,2,6,Y,1935,Town of Buso,Middle East
+Somali,MO04,36,36,Ca02,Somali,Somali,3,5,2,1,,1900,Dolbahanta subtribe,Middle East
+Amhara,MP05,37,37,Ca07,NA,Amhara,4,5,5,8,Y,1953,Gondar District,Middle East
+Teda,MS22,40,40,Cc02,NA,Teda,2,6,4,2,Y,1950,Nomads of Tibesti,Middle East
+Berbers of Morocco,MX03,42,42,Cd03,Shulh,Riffians,2,5,2,7,Y,1926,"Entirety, Moroccan",Middle East
+Fellahin,MR13,43,43,Cd02,NA,Egyptians,4,6,5,8,Y,1950,Town and environs of Silwa,Middle East
+Rwala Bedouin,MD04,46,46,Cj02,NA,Rwala Bedouin,2,1,2,2,Y,1913,Not specified,Middle East
+Turks,MB01,47,47,Ci05,NA,Turks,4,5,5,8,Y,1950,Northern Anatolian Plateau,Middle East
+Rural Irish,ER06,51,51,Cg03,NA,Irish,3,5,5,8,Y,1932,"Kinvarra Parish, County Clare",Europe
+Saami,EP04,52,52,Cg04,NA,Lapps,1,1,2,1,Y,1950,"Konkama, Sweden",Europe
+Nenets,RU41,53,53,Ec04,NA,Yurak Samoyed,1,1,2,1,Y,1894,"Entirety, tribe.",Russia
+Russians,RF10,54,54,Ch11,NA,Russians,5,6,5,8,Y,1955,Viritatino village,Russia
+Abkhazians,RI03,55,55,Ci12,NA,Abkhaz,2,5,5,4,Y,1880,Not specified,Russia
+Kurds,MA11,57,57,Ci11,Kurds,Kurd,3,6,4,6,,1951,Town and vicinity of Rowanduz,Middle East
+Basseri,MA10,58,58,Ea06,NA,Basseri,2,2,2,5,Y,1958,Nomadic branch,Middle East
+West Punjabi,AT03,59,59,Ea13,NA,Punjabi (West),5,5,4,4,Y,1950,Mohla Village,Asia
+Gond,AW32,60,60,Eg13,NA,Gond,NA,3,1,NA,Y,1938,Hill Maria,Asia
+Santal,AW42,62,62,Ef01,Santal,Santal,2,6,1,3,Y,1940,Bankura and Birbhum districts of Bengal,Asia
+Uttar Pradesh,AW19,63,63,Ef11,NA,Uttar Pradesh,5,6,4,8,Y,1945,Village and vicinity of Senapur,Asia
+Burusho,AV07,64,64,Ee02,NA,Burusho,2,6,5,4,Y,1934,Hunza State,Asia
+Kazakh,RQ02,65,65,Eb01,NA,Kazak,4,2,4,2,,1885,Great Horde,Russia
+Mongolia,AH01,66,66,Eb03,Mongol,Khalka Mongols,4,2,4,1,,1920,Narobanchin Territory,Asia
+Lepcha,AK05,68,68,Ee03,Lepcha,Lepcha,2,5,2,3,Y,1937,Lingthem and vicinity,Asia
+Garo,AR05,69,69,Ei01,Garo,Garo,2,3,2,4,,1955,Village and environs of Rengsanggri,Asia
+Mara,AR20,70,70,Ei04,NA,Lakher,2,3,4,NA,Y,1930,"Entirety, tribe",Asia
+Burmans,AP04,71,71,Ei03,NA,Burmese,4,6,5,8,Y,1965,Nondwin village,Asia
+Rmeet,AM28,72,72,Ej01,NA,Lamet,1,3,2,3,Y,1940,"Entirety, tribe, northwestern Laos",Asia
+Vietnamese,AM11,73,73,Ej04,NA,Vietnamese,5,6,5,8,,1930,Red River Delta in Tonkin,Asia
+Central Thai,AO07,76,76,Ej09,Central Thai,Siamese,5,6,2,6,,1955,Village of Bang Chan,Asia
+Andamans,AZ02,79,79,Eh01,Andamans,Andamanese,1,1,1,1,,1860,Aka-Bea tribe of South Andaman,Asia
+Javanese,OE05,83,83,Ib02,NA,Javanese,5,6,5,7,,1954,Town and environs of Pare,Oceania
+Balinese,OF07,84,84,Ib03,NA,Balinese,4,6,5,5,Y,1958,Tihingan village,Oceania
+Iban,OC06,85,85,Ib01,Iban,Iban,1,3,1,2,Y,1950,Baleh,Oceania
+Sama-Bajau,OA08,86,86,Ia13,NA,Badjau,1,4,2,4,Y,1963,"Tawi-Tawi Bajau (boat-dwelling Bajau), Tawi-Tawi province, Bangsamoro Autonomous Region in Muslim Mindanao",Oceania
+Eastern Toraja,OG11,87,87,Ic05,Toradja,Toradja,2,3,2,3,Y,1910,Bareâ€™e subgroup,Oceania
+Tiwi,OI20,90,90,Id03,NA,Tiwi,1,1,1,3,Y,1929,Melville Island,Oceania
+Aranda,OI08,91,91,Id01,Aranda,Aranda,1,1,1,1,Y,1896,Alice springs and environs.,Oceania
+Orokaiva,OJ23,92,92,Ie09,Orokaiva,Orokaiva,1,4,1,2,,1925,"Northern District, Papua New Guinea",Oceania
+Kimam,OJ82,93,93,Ie18,NA,Kimam,1,5,1,4,,1960,Bamol village,Oceania
+Kapauku,OJ29,94,94,Ie01,Kapauku,Kapauku,2,3,2,2,Y,1955,Village of Botukebo,Oceania
+Manus,OM06,96,96,Ig09,NA,Manus,1,2,2,3,Y,1929,"Village of Peri, Manus Province, Papua New Guinea",Oceania
+Trobriands,OL06,98,98,Ig02,Trobrianders,Trobrianders,2,4,4,3,Y,1914,Kiriwina Island,Oceania
+Siwai,ON19,99,99,Ig01,NA,Siuai,1,4,2,2,Y,1939,"Southern Bougainville, North Solomons Province, Papua New Guinea",Oceania
+Tikopia,OT11,100,100,Ii02,Tikopia,Tikopia,2,4,4,5,Y,1930,Ravenga District,Oceania
+Bau Fijians,OQ12,102,102,Ih14,NA,Mbau Fijians,3,4,2,6,Y,NA,,Oceania
+Maori,OZ04,104,104,Ij02,NA,Maori,2,3,4,4,Y,1820,Nga Puhi tribe,Oceania
+Samoans,OU08,106,106,Ii14,NA,Western Samoans,3,4,4,4,Y,1829,Aana kingdom of western Upolu Island,Oceania
+Marshallese,OR11,108,108,If17,NA,Marshallese,2,4,4,3,Y,1900,Jaluit Atoll,Oceania
+Chuuk,OR19,109,109,If02,NA,Trukese,1,4,1,3,Y,1947,"Romonum Island, Chuuk State, Federated States of Micronesia",Oceania
+Yapese,OR22,110,110,If06,NA,Yapese,2,4,4,2,Y,1910,Yap Island,Oceania
+Ifugao,OA19,112,112,Ia03,Ifagao,Ifugao,1,6,2,3,Y,1910,Kiangan group,Oceania
+Korea,AA01,116,116,Ed01,Korea,Koreans,3,6,5,8,Y,1947,"Sondupâ€™o village, Samku Li town, Kanghwa Island",Asia
+Okayama,AB43,117,117,Ed05,NA,Japanese,5,6,5,8,,1950,Okayama prefecture,Asia
+Ainu,AB06,118,118,Ec07,NA,Ainu,2,3,1,1,,1880,"Saru Basin, Hokkaido",Asia
+Nivkh,RX02,119,119,Ec01,NA,Gilyak,1,1,1,2,,1890,Sakhalin Island,Russia
+Chukchee,RY02,121,121,Ec03,Chuuk,Chukchee,1,1,2,1,Y,1900,"Reindeer division, Eastern Siberia, Russia",Russia
+Copper Inuit,ND08,124,124,Na03,NA,Copper Eskimo,1,1,1,1,Y,1915,Mainland division of Coronation Gulf,North America
+Ojibwa,NG06,127,127,Na33,Ojibway,Saulteaux,1,1,1,3,,1930,"Berens River, little Grand Rapids, and Pekangekum bands",North America
+Eyak,NA07,130,130,Nb05,NA,Eyak,2,1,2,1,Y,1890,"Entirety, tribe",North America
+Haida,NE09,131,131,Nb01,NA,Haida,1,1,4,3,Y,1875,Town of Masset,North America
+Nuxalk,NE06,132,132,Nb09,NA,Bellacoola,1,1,4,2,Y,1880,"Central village, lower Bella Coola River",North America
+Pomo,NS18,135,135,Nc18,NA,Pomo (Eastern),1,1,2,4,Y,1850,"Cignon village, Clear Lake",North America
+Yokuts,NS29,136,136,Nc24,NA,Yokuts (Lake),1,1,2,4,Y,1850,Tulare Lake,North America
+Klamath,NR10,138,138,Nc08,Klamath,Klamath,1,1,2,1,Y,1860,"Entirety, tribe",North America
+Hidatsa,NQ14,141,141,Ne15,NA,Hidatsa,1,5,1,5,,1836,Not specified,North America
+Pawnee,NQ18,142,142,Nf06,Pawnee,Pawnee,2,3,4,4,Y,1867,Skidi band,North America
+Huron/Wendat,NG05,144,144,Ng01,NA,Huron,2,3,2,5,Y,1634,Not specified,North America
+Havasupai,NT14,150,150,Nd03,NA,Havasupai,1,6,1,3,,1918,"Entirety, tribe.",North America
+O'odham,NU79,151,151,Ni02,NA,Papago,1,6,1,NA,,1910,Archie division,North America
+Popoluca,NU30,154,154,Nj03,NA,Popoluca,1,3,1,5,Y,1940,Town and environs of Soteapan,North America
+Miskito,SA15,156,156,Sa09,NA,Miskito,2,3,1,3,Y,1921,Cape Gracias a Dias,South America
+Kuna,SB05,158,158,Sa01,Kuna,Cuna (Tule),2,3,2,2,Y,1927,San Blas Archipelago,South America
+Goajiro,SC13,159,159,Sb06,NA,Goajiro,1,2,2,1,Y,1947,Not specified,South America
+Haitians,SV03,160,160,Sb09,NA,Haitians,4,5,5,8,Y,1935,Town of Mirebalais,South America
+Warao,SS18,162,162,Sc01,Warao,Warrau,1,2,1,2,Y,1935,"Orinoco Delta, e.g., Winikina",South America
+Yanoama,SQ18,163,163,Sd09,Yanoama,Yanomamo,1,3,1,2,,1965,Shamatari tribe,South America
+Barama River Carib,SR09,164,164,Sc03,NA,Carib (Barama),1,3,1,1,Y,1932,Not specified,South America
+Saramaka,SR15,165,165,Sc06,Saramaka,Saramacca,3,3,1,3,Y,1928,Upper Suriname River,South America
+Tukano,SQ19,167,167,Se12,Tukano,Cubeo (Tucano),1,3,1,1,Y,1939,Village on Caduiari River,South America
+Chachi,SD06,168,168,Sf03,NA,Cayapa,1,4,1,5,Y,1908,RÃ­o Cayapas drainage,South America
+Aymara,SF05,172,172,Sf02,Aymara,Aymara,NA,3,2,5,Y,1940,"Chucuito, Peru",South America
+SirionÃ³,SF21,173,173,Se01,NA,Siriono,1,3,1,1,Y,1942,Vicinity of the Rio Blanco,South America
+Xavante,SP26,179,179,Sj11,NA,Shavante,1,3,1,3,Y,1958,Village of Sao Domingo,South America
+GuaranÃ­,SM04,181,181,Sj10,Guarani,Cayua,1,3,1,1,,1890,Southern Mato Grosso,South America
+Enxet and Enlhet,SK15,182,182,Sh09,NA,Lengua,1,2,1,3,Y,1889,Band in contact with mission,South America
+Mapuche,SG04,184,184,Sg02,NA,Mapuche,1,5,2,2,,1950,Vicinity of Temuco,South America
+Tehuelche,SH05,185,185,Sg04,NA,Tehuelche,1,1,1,2,Y,1870,Entirety: Equestrian band,South America
+Yahgan,SH06,186,186,Sg01,NA,Yahgan,1,1,1,1,Y,1865,Not specified,South America
+Taiwan Hokkien,AD05,201,NA,,Taiwan Hokkien,Taiwan Hokkien,NA,NA,NA,NA,,1959,"Hsin Hsing Village, Northern Taiwan",Asia
+Khasi,AR07,202,NA,Ei08,Khasi,Khasi,2,3,4,NA,,1900,"Khasi District, Meghalaya, India",Asia
+Sinhalese,AX04,203,NA,Eh06,NA,Sinhalese,4,6,5,8,,1950,Kandyan Region,Asia
+Serbs,EF06,204,NA,Ch01,Serbs,Serbs,4,5,5,8,,1950,"Orasac Village, Serbia, Yugoslavia",Europe
+Highland Scots,ES10,205,NA,,Highland Scots,Highland Scots,NA,NA,NA,NA,,1919,Isle of Lewis and Harris,Europe
+Dogon,FA16,206,NA,Ag03,Dogon,Dogon,2,5,2,3,,1930,"Sanga, Mpoti Region",Africa
+Kanuri,MS14,207,NA,Cb19,Kanuri,Kanuri,4,5,4,NA,,1870,Not specified (Borno State),Middle East
+Libyan Bedouin,MT09,208,NA,Cd20,NA,Libyan Bedouin,4,5,NA,NA,,1920,"Not Specified (Cyrenaica, Libya)",Middle East
+Shluh,MW11,209,NA,Cd05,NA,Shluh,2,6,1,NA,,1920,"Shluh tribes living in the Grand Ã¬ Atlas, Anti-Atlas, and Sous River Valley regions",Middle East
+Tlingit,NA12,210,NA,Nb22,Tlingit,Tlingit,1,1,4,4,,1880,"Chilkat Village, Klukwan, Southeastern Alaska",North America
+Blackfoot,NF06,211,NA,Ne12,Blackfoot,Blackfoot,1,1,1,4,,1850,"Blackfeet Indian Reservation, Montana, United States",North America
+Iroquois,NM09,212,NA,Ng10,Iroquois,Iroquois,3,3,1,4,,1750,Iroquois Reservations,North America
+Hopi,NT09,213,NA,Nh18,Hopi,Hopi,1,6,1,4,,1920,Southwest and Basin,North America
+Tarahumara,NU33,214,NA,Ni01,Tarahumara,Tarahumara,1,5,2,NA,,1930,"Not Specified (Chihuahua, Mexico)",North America
+Zapotec,NU44,215,NA,Nj10,NA,Zapotec,NA,3,NA,7,,1940,Mitla,North America
+Lau Fijians,OQ06,217,NA,Ih04,Lau Fijians,Lau Fijians,3,4,2,2,,1920,Lau Island,Oceania
+Yakut,RV02,218,NA,Ec02,Yukut,Yakut,3,2,2,2,,1900,"Siberia, Russia",Russia
+Kogi,SC07,219,NA,Sb02,Kogi,Kogi,1,3,2,NA,,1949,"Sierra Nevada De Santa Marta, Colombia",South America
+Ona,SH04,220,NA,Sg03,Ona,Ona,1,1,1,2,,1880,Tierra del Fuego,South America
+Mataco,SI07,221,NA,Sh01,Mataco,Mataco,1,2,1,2,,1860,"Gran Chaco region, Bolivia and Argentina",South America
+Bahia Brazilians,SO11,222,NA,So11,Bahia Brazilia,Bahia Brazilians,5,5,5,8,,1952,Eastern South America,South America
+Bororo,SP08,223,NA,Si01,Bororo,Bororo,2,1,1,NA,,1920,Kejara,South America

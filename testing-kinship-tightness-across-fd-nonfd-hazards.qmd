@@ -1,0 +1,192 @@
+---
+title: "testing-kinship-tightness-across-fd-nonfd-hazards"
+format: html
+---
+
+
+```{r}
+library(tidyverse)
+library(brms)
+
+ds_FA <- read_csv("sharing-dataset-for-analysis.csv")
+
+k_tl <- read_csv("data/DT-KT-for-tef-20230807.csv") 
+
+ds_tl <- inner_join(ds_FA, k_tl, by = c("ID"= "SCCS_ID"), na_matches = "never")
+
+hz_IBSS <- read_csv("data/DT-DisasterHazardVariables-EP.csv")
+
+ds_ibss <- inner_join(ds_tl, hz_IBSS, by = c("ID" = "SCCS_ID"))
+
+cor(Other_Hazards, fd_freq_30, method = "spearman", use = "complete.obs", data = )
+ggplot(ds_ibss, aes(x = fd_freq_30, y = Other_Hazards)) +
+  geom_jitter(width = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+
+# variable spreads
+```{r}
+hist(ds$allhazards_H9a_sev_exposure_30)
+hist(ds$allhazards_H9a_sev_exposure_30_IA)
+hist(ds$disaster_h9a_sev_exposure_30)
+hist(ds$disaster_h9a_sev_exposure_30_IA)
+hist(ds$fd_freq_30)
+hist(ds$fd_freq_30_IA)
+
+hist(ds$KT_3)
+hist(ds$KT_3_Tr)
+
+table(fd_exp_kt3$KT_3)
+table(fd_exp_kt3$KT_3_Tr)
+
+ds %>%
+  filter(!is.na(Unilineal))
+```
+```{r}
+fd_exp_kt3 <- ds[complete.cases(ds[, c("fd_freq_30", "KT_3")]), ] 
+
+table(fd_exp_kt3$KT_3)
+
+fd_exp_kt3 %>%
+  filter(!is.na(Unilineal)) %>% 
+  select(ID, Unilineal)
+
+ggplot(fd_exp_kt3, aes(x = fd_freq_30, y = KT_3)) +
+  geom_jitter(width = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+# sensitivity analysis
+fd_exp_kt3$z_sev <- scale(fd_exp_kt3$allhazards_H9a_sev_exposure_30)
+
+fd_exp_kt3_trim <- fd_exp_kt3[abs(fd_exp_kt3$z_sev) <= 2, ]
+
+ggplot(fd_exp_kt3_trim, aes(x = allhazards_H9a_sev_exposure_30, y = KT_3)) +
+   geom_jitter(height = 0.05, alpha = 0.6) +
+   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+nonfd_exp_kt3 <- ds[complete.cases(ds[, c("allhazards_nonfd_sev_exposure2_30", "KT_3")]), ] 
+
+ggplot(nonfd_exp_kt3, aes(x = allhazards_nonfd_sev_exposure2_30, y = KT_3)) +
+  geom_jitter(width = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+```
+
+# KT_3
+
+```{r}
+fd_kt3 <- ds[complete.cases(ds[, c("fd_freq_30", "KT_3")]), ] 
+
+ggplot(fd_kt3, aes(x = fd_freq_30, y = KT_3)) +
+  geom_jitter(width = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+fd_kt3_ord <- fd_kt3 %>%
+  mutate(KT_3 = as.ordered(KT_3))
+
+
+mod_fd_kt3 <- brm(
+  formula = KT_3 ~ fd_freq_30,
+  data = fd_kt3_ord,
+  family = cumulative(link = "logit"),  # ordinal outcome
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),
+    prior(student_t(3, 0, 2.5), class = "Intercept")  # better than cauchy here
+  )
+)
+summary(mod_fd_kt3)
+plot(mod_fd_kt3, type = "coef")
+
+conditional_effects_plot <- conditional_effects(mod_fd_kt3, categorical = TRUE)
+
+plot(conditional_effects_plot)
+```
+
+```{r}
+hypothesis(mod_fd_kt3, "fd_freq_30 < 0")
+
+draws2 <- as_draws_df(mod_fd_kt3)
+
+pfd_kt3 <- draws2 %>%
+  ggplot(aes(x = b_fd_freq_30)) +
+  geom_density(fill = "steelblue", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  labs(
+    title = "Kinship Tightness",
+    x = expression(beta ~ "(Food Destroying Hazard Frequency)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pfd_kt3
+```
+
+```{r}
+fd_kt3_IA <- ds[complete.cases(ds[, c("fd_freq_30_IA", "KT_3")]), ] 
+
+
+ggplot(fd_kt3_IA, aes(x = fd_freq_30_IA, y = KT_3)) +
+  geom_jitter(width = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
+
+```{r}
+fd_kt3_ord_IA <- fd_kt3_IA %>%
+  mutate(KT_3 = as.ordered(KT_3))
+
+mod_fd_kt3_IA <- brm(
+  formula = KT_3 ~ fd_freq_30_IA,
+  data = fd_kt3_ord_IA,
+  family = cumulative(link = "logit"),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),
+    prior(student_t(3, 0, 2.5), class = "Intercept")
+  )
+)
+
+summary(mod_fd_kt3_IA)
+# plot(mod_fd_kt3_IA, type = "coef")
+
+conditional_effects_plot <- conditional_effects(mod_fd_kt3_IA, categorical = TRUE)
+plot(conditional_effects_plot)
+```
+
+```{r}
+hypothesis(mod_fd_kt3_IA, "fd_freq_30_IA < 0")
+
+draws2 <- as_draws_df(mod_fd_kt3_IA)
+
+pfd_kt3_IA <- draws2 %>%
+  ggplot(aes(x = b_fd_freq_30_IA)) +
+  geom_density(fill = "steelblue", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  labs(
+    title = "Kinship Tightness",
+    x = expression(beta ~ "(Food Destroying Hazard Frequency (IA))"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pfd_kt3_IA
+```
+
+

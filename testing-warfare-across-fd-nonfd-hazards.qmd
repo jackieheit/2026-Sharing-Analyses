@@ -19,10 +19,21 @@ wf <- read_csv("../minerva/Warfare/Upstream/DT-WarfareViolence-Combined-Clean.cs
 ds <- full_join(ds_FA, wf, by = c("OWC", "ID"))
 
 ```
+
 # Variable spreads
+
 ```{r}
 var_spreads <- ds %>%
   filter(State == "No" & newpac_R < 3)
+
+cor.test(
+  var_spreads$ovfreq_R,
+  var_spreads$ea033,
+  use = "complete.obs",
+  method = "spearman"
+)
+
+
 ```
 
 ## food destroying vars
@@ -65,8 +76,9 @@ ggplot(var_spreads, aes(x = ovfreq_R , y = fd_freq_30_IA)) +
 # Food destroying Hazards
 
 ## Overall frequency of warfare
+
 ```{r}
-fd_ovfreq_IA <- var_spreads[complete.cases(var_spreads[, c("fd_freq_30_IA", "ovfreq_R")]), ] 
+fd_ovfreq_IA <- var_spreads[complete.cases(var_spreads[, c("fd_freq_30_IA", "ovfreq_R", "ea033")]), ] 
 ```
 
 ```{r}
@@ -99,8 +111,8 @@ summary(test_no26)
 
 ```{r}
 mod_fd_ovfreq_IA <- brm(
-  formula = ovfreq_R ~ fd_freq_30_IA,
-  data = fd_ovfreq,
+  formula = ovfreq_R ~ fd_freq_30_IA + mo(ea033),
+  data = fd_ovfreq_IA,
   family = gaussian(),
   chains = 4,
   iter = 2000,
@@ -191,7 +203,8 @@ pfd_ovfreq <- draws2 %>%
 pfd_ovfreq
 ```
 
-## External Warfare 
+## External Warfare
+
 ```{r}
 fd_extfreq <- var_spreads[complete.cases(var_spreads[, c("fd_freq_30", "extfreq_R")]), ] 
 ```
@@ -210,6 +223,7 @@ ggplot(fd_extfreq, aes(x = fd_freq_30, y = extfreq_R)) +
 #   geom_jitter(width = 0.05, alpha = 0.6) +
 #   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
 ```
+
 ```{r}
 test <- lm(extfreq_R ~ fd_freq_30, data = fd_extfreq)
 summary(test)
@@ -217,9 +231,6 @@ plot(test)
 
 test_no17 <- lm(extfreq_R ~ fd_freq_30,
                 data = fd_extfreq[-17, ])
-
-summary(test_full)
-summary(test_no26)
 ```
 
 ```{r}
@@ -266,17 +277,16 @@ pfd_extfreq <- draws2 %>%
 pfd_extfreq
 ```
 
-
 ```{r}
 fd_extfreq_IA <- var_spreads[complete.cases(var_spreads[, c("fd_freq_30_IA", "extfreq_R")]), ] 
 ```
-
 
 ```{r}
 ggplot(fd_extfreq_IA, aes(x = fd_freq_30_IA, y = extfreq_R)) +
   geom_jitter(width = 0.05, alpha = 0.6) +
   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
 ```
+
 ```{r}
 test <- lm(extfreq_R ~ fd_freq_30_IA, data = fd_extfreq_IA)
 summary(test)
@@ -331,6 +341,7 @@ pfd_extfreq_IA <- draws2 %>%
 
 pfd_extfreq_IA
 ```
+
 ## Internal Warfare
 
 ```{r}
@@ -385,7 +396,6 @@ pfd_intrfreq <- draws2 %>%
 pfd_intrfreq
 ```
 
-
 ```{r}
 fd_intrfreq_IA <- var_spreads[complete.cases(var_spreads[, c("fd_freq_30_IA", "intrfreq_R")]), ] 
 
@@ -394,6 +404,7 @@ ggplot(fd_intrfreq_IA, aes(x = fd_freq_30_IA, y = intrfreq_R)) +
   geom_jitter(width = 0.05, alpha = 0.6) +
   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
 ```
+
 ```{r}
 mod_fd_intrfreq_IA <- brm(
   formula = intrfreq_R ~ fd_freq_30_IA,
@@ -414,7 +425,6 @@ plot(mod_fd_intrfreq_IA, type = "coef")
 conditional_effects_plot <- conditional_effects(mod_fd_intrfreq_IA)
 plot(conditional_effects_plot)
 ```
-
 
 ```{r}
 hypothesis(mod_fd_intrfreq_IA, "fd_freq_30_IA > 0")
@@ -439,10 +449,10 @@ pfd_intrfreq_IA <- draws2 %>%
 pfd_intrfreq_IA
 ```
 
-
-
 # Non-Food Destroying Hazards (2.5)
+
 ## Overall Warfare
+
 ```{r}
 nonfd_ovfreq <- var_spreads[
   complete.cases(var_spreads[, c("nonfd_2.5_freq_30", "ovfreq_R")]),
@@ -542,6 +552,7 @@ p_nonfd_ovfreq_IA
 ```
 
 ## External Warfare
+
 ```{r}
 nonfd_extfreq <- var_spreads[
   complete.cases(var_spreads[, c("nonfd_2.5_freq_30", "extfreq_R")]),
@@ -590,7 +601,6 @@ p_nonfd_extfreq <- draws2 %>%
 
 p_nonfd_extfreq
 ```
-
 
 ```{r}
 nonfd_extfreq_IA <- var_spreads[
@@ -642,6 +652,7 @@ p_nonfd_extfreq_IA
 ```
 
 ## Internal Warfare
+
 ```{r}
 nonfd_intrfreq <- var_spreads[
   complete.cases(var_spreads[, c("nonfd_2.5_freq_30", "intrfreq_R")]),
@@ -740,9 +751,10 @@ p_nonfd_intrfreq_IA <- draws2 %>%
 p_nonfd_intrfreq_IA
 ```
 
-
 # Non-Food Destroying Hazards (2)
+
 ## Overall Warfare
+
 ```{r}
 nonfd_ovfreq2 <- var_spreads[
   complete.cases(var_spreads[, c("nonfd_2_freq_30", "ovfreq_R")]),
@@ -842,6 +854,7 @@ p_nonfd_ovfreq2_IA
 ```
 
 ## External Warfare
+
 ```{r}
 nonfd_extfreq2 <- var_spreads[
   complete.cases(var_spreads[, c("nonfd_2_freq_30", "extfreq_R")]),
@@ -890,7 +903,6 @@ p_nonfd_extfreq2 <- draws2 %>%
 
 p_nonfd_extfreq2
 ```
-
 
 ```{r}
 nonfd_extfreq2_IA <- var_spreads[
@@ -942,6 +954,7 @@ p_nonfd_extfreq_IA
 ```
 
 ## Internal Warfare
+
 ```{r}
 nonfd_intrfreq2 <- var_spreads[
   complete.cases(var_spreads[, c("nonfd_2_freq_30", "intrfreq_R")]),
@@ -1039,8 +1052,6 @@ p_nonfd_intrfreq2_IA <- draws2 %>%
 
 p_nonfd_intrfreq2_IA
 ```
-
-
 
 # OUTDATED
 
@@ -1185,6 +1196,7 @@ ggplot(fd_extfreq_trim, aes(x = disaster_h9a_sev_exposure_30_IA, y = extfreq_R))
 Really not seeing any sort of relationship here and it's a bit hard to decipher given the scaling of the warfare variables.
 
 ## Intrfreq
+
 ```{r}
 fd_intrfreq <- ds[complete.cases(ds[, c("disaster_h9a_sev_exposure_30_IA", "intrfreq_R")]), ]
 ```
@@ -1251,5 +1263,3 @@ pfd_intrfreq <- draws2 %>%
 
 pfd_intrfreq
 ```
-
-

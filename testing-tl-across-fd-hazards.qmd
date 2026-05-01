@@ -15,11 +15,151 @@ tl <- read_csv("../minerva/Tight-Loose/Datasets/DT-TL-FinalData.csv") %>%
   )
 
 ds <- full_join(ds_FA, tl, by = c("OWC"))
+
+hz_cat <- read_csv("../minerva/Hazards/Datasets/DT-hzcats-society-level.csv") %>%
+  select(ID, allhazards_est_count_30)
+
+ds <- full_join(ds, hz_cat, by = c("ID")) %>%
+  mutate(
+    General_TL5B_pref_final_bin = ordered(General_TL5B_pref_final,
+      levels = c(1, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4))
+  )
+
 ```
+
+
+
+```{r}
+tl_bp_clean <- ds %>%
+  mutate(
+    tl_bin = factor(if_else(General_TL5B_pref_final > 2.5, 1, 0)),
+    normative_ind_IA = if_else(normative_est_count_30_IA > 0, 1, 0)
+  ) %>%
+  drop_na(General_TL5B_pref_final, allhazards_est_count_30, normative_ind_IA) %>%
+  mutate(
+    z_tl  = as.numeric(scale(General_TL5B_pref_final)),
+    z_haz = as.numeric(scale(allhazards_est_count_30))
+  ) %>%
+  filter(
+    abs(z_tl) <= 2,
+    abs(z_haz) <= 2
+  )
+
+ggplot(tl_bp_clean, aes(
+  x = allhazards_est_count_30,
+  y = General_TL5B_pref_final,
+  color = factor(normative_ind_IA)
+)) +
+  geom_jitter(width = 0.1, height = 0.1, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE) +
+  labs(
+    x = "All Hazard Count (IA)",
+    y = "Cultural tightness",
+    color = "Normative Present",
+    title = "Tight-Loose vs Hazard Count by Normative Hazard Presence"
+  ) +
+  theme_minimal()
+
+
+
+ggplot(ds, aes(x = fd_freq_30_IA, y = General_TL5B_pref_final)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+ggplot(ds, aes(x = fd_freq_30, y = General_TL5B_pref_final)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+
+
+
+
+```
+
+
+
+
+```{r}
+tl_int <- ds %>%
+  mutate(
+    normative_ind_IA = if_else(normative_est_count_30_IA > 0, 1, 0),
+    normative_ind_IA = factor(normative_ind_IA),
+    TL_ord = ordered(General_TL5B_pref_final)
+  ) %>%
+  drop_na(TL_ord, allhazards_est_count_30_IA, normative_ind_IA) %>%
+  mutate(
+    allhazards_z = as.numeric(scale(allhazards_est_count_30_IA))
+  )
+
+mod_tl_allhaz_norm <- brm(
+  formula = TL_ord ~ allhazards_z * normative_ind_IA + mo(ea033),
+  data = tl_int,
+  family = cumulative("logit"),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 1), class = "b"),
+    prior(student_t(3, 0, 2.5), class = "Intercept")
+  ),
+  seed = 123
+)
+
+summary(mod_tl_allhaz_norm)
+
+conditional_effects(
+  mod_tl_allhaz_norm,
+  effects = "allhazards_z:normative_ind_IA"
+)
+
+hypothesis(mod_tl_allhaz_norm, "allhazards_z < 0")
+hypothesis(mod_tl_allhaz_norm, "allhazards_z + allhazards_z:normative_ind_IA1 > 0")
+hypothesis(mod_tl_allhaz_norm, "allhazards_z:normative_ind_IA1 > 0")
+```
+
+```{r}
+draws_int <- as_draws_df(mod_tl_allhaz_norm)
+
+x_vals <- draws_int$`b_allhazards_z:normative_ind_IA1`
+x_lim <- max(abs(x_vals), na.rm = TRUE)
+
+post_prob <- mean(x_vals > 0, na.rm = TRUE)
+post_prob_label <- paste0("P(\u03b2 > 0) = ", round(post_prob * 100, 1), "%")
+
+p_int <- draws_int %>%
+  ggplot(aes(x = `b_allhazards_z:normative_ind_IA1`)) +
+  geom_density(fill = "#ED7D31", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  coord_cartesian(xlim = c(-x_lim, x_lim)) +
+  annotate(
+    "text",
+    x = x_lim * 0.95,
+    y = Inf,
+    label = post_prob_label,
+    hjust = 1,
+    vjust = 1.5,
+    size = 5
+  ) +
+  labs(
+    title = "Posterior Distribution of Interaction Effect",
+    x = expression(beta ~ "(All hazards" %*% "Normative hazards)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    axis.title = element_text(face = "bold")
+  )
+
+p_int
+```
+
+
+
 
 # Food destroying
 ```{r}
-fd_tl <- ds[complete.cases(ds[, c("disaster_h9a_sev_exposure_30_IA", "General_TL5B_pref_final")]), ]
+fd_tl <- ds[complete.cases(ds[, c("disaster_h9a_sev_exposure_30_IA", "General_TL5B_pref_final_bin")]), ]
+fd_tl_cont <- ds[complete.cases(ds[, c("disaster_h9a_sev_exposure_30_IA", "General_TL5B_pref_final_bin", "ea033")]), ]
 ```
 
 ```{r}
@@ -39,16 +179,22 @@ ggplot(fd_tl_trim, aes(x = disaster_h9a_sev_exposure_30_IA, y = General_TL5B_pre
 ```
 
 ```{r}
-fd_tl_trim <- fd_tl_trim %>%
-  mutate(
-    General_TL5B_pref_final = ordered(General_TL5B_pref_final,
-      levels = c(1, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4))
-  )
-
-
 mod_fd_tl <- brm(
-  formula = General_TL5B_pref_final ~ disaster_h9a_sev_exposure_30_IA + mo(ea033),
-  data = fd_tl_trim,
+  formula = General_TL5B_pref_final_bin ~ disaster_h9a_sev_exposure_30_IA,
+  data = fd_tl,
+  family = cumulative(link = "logit"),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,control = list(adapt_delta = 0.95),
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(cauchy(0, 1), class = "Intercept")  # Weakly informative Cauchy prior for the intercept
+  )
+)
+
+mod_fd_tl_cont <- brm(
+  formula = General_TL5B_pref_final_bin ~ disaster_h9a_sev_exposure_30_IA + mo(ea033),
+  data = fd_tl_cont,
   family = cumulative(link = "logit"),
   chains = 4,
   iter = 2000,
@@ -60,6 +206,7 @@ mod_fd_tl <- brm(
 )
 
 summary(mod_fd_tl)
+summary(mod_fd_tl_cont)
 ```
 
 ```{r}
@@ -69,52 +216,33 @@ c_effects_plot <- conditional_effects(mod_fd_tl, categorical = TRUE)
 c_effects_plot
 ```
 
-
-
-# Boxplot between food destroying hazard exposures and cultural tightness
 ```{r}
-fd_tl_bp <- fd_tl_trim %>%
-  mutate(
-    tl_bin = factor(if_else(General_TL5B_pref_final > 2.5, 1, 0))
-  )
-
-ggplot(fd_tl_bp, aes(x = tl_bin, y = disaster_h9a_sev_exposure_30)) +
-  geom_boxplot() +
-  labs(
-    x = "Tight-Loose (binned)",
-    y = "Disaster H9a Severity Exposure (EP 30)",
-    title = "Disaster Severity Exposure by Tight-Loose Category"
-  ) +
-  theme_minimal()
-  
-  
-  
-```
-
-
-
-
-
-
-
-
-
-
-
-```{r}
-# in the our better nature paper, there was a positive relationship between seasonal food sharing and severe non-fd hazards
 hypothesis(mod_fd_tl, "disaster_h9a_sev_exposure_30_IA < 0") # they do!
 
 drawsfd <- as_draws_df(mod_fd_tl)
 
-# Plot for Sev
+x_vals <- drawsfd$b_disaster_h9a_sev_exposure_30_IA
+x_lim <- max(abs(x_vals), na.rm = TRUE)
+
+post_prob <- mean(x_vals < 0, na.rm = TRUE)
+
 pfd_tl <- drawsfd %>%
   ggplot(aes(x = b_disaster_h9a_sev_exposure_30_IA)) +
-  geom_density(fill = "mediumseagreen", alpha = 0.7) +
+  geom_density(fill = "#ED7D31", alpha = 0.7) +
   geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  coord_cartesian(xlim = c(-x_lim, x_lim)) +
+  annotate(
+    "text",
+    x = x_lim * 0.95,
+    y = Inf,
+    label = paste0("Post. Prob = ", round(post_prob * 100, 1), "%"),
+    hjust = 1,
+    vjust = 1.5,
+    size = 5
+  ) +
   labs(
-    title = "Cultural Tightness",
-    x = expression(beta ~ "(Weighted exposure to food-destroying hazards)"),
+    # title = "Cultural Tightness",
+    x = expression(beta ~ "(Food destroying hazards weighted by severity)"),
     y = "Density"
   ) +
   theme_minimal(base_size = 14) +
@@ -127,9 +255,53 @@ pfd_tl
 ```
 
 
+
+
+```{r}
+hypothesis(mod_fd_tl, "disaster_h9a_sev_exposure_30_IA < 0") # they do!
+
+drawsfd_cont <- as_draws_df(mod_fd_tl_cont)
+
+x_vals <- drawsfd_cont$b_disaster_h9a_sev_exposure_30_IA
+x_lim <- max(abs(x_vals), na.rm = TRUE)
+
+post_prob <- mean(x_vals < 0, na.rm = TRUE)
+
+pfd_tl_cont <- drawsfd_cont %>%
+  ggplot(aes(x = b_disaster_h9a_sev_exposure_30_IA)) +
+  geom_density(fill = "#ED7D31", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  coord_cartesian(xlim = c(-x_lim, x_lim)) +
+  annotate(
+    "text",
+    x = x_lim * 0.95,
+    y = Inf,
+    label = paste0("Post. Prob = ", round(post_prob * 100, 1), "%"),
+    hjust = 1,
+    vjust = 1.5,
+    size = 5
+  ) +
+  labs(
+    # title = "Cultural Tightness",
+    x = expression(beta ~ "(Food destroying hazards weighted by severity)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pfd_tl_cont
+```
+
+
+
 # Severe non-food destroying frequency
 ```{r}
-sevnfd_tl <- ds[complete.cases(ds[, c("disaster_nonfd_sev_exposure_30_IA", "General_TL5B_pref_final")]), ]
+sevnfd_tl <- ds[complete.cases(ds[, c("disaster_nonfd_sev_exposure2_30_IA", "General_TL5B_pref_final_bin")]), ]
+
+sevnfd_tl_cont <- ds[complete.cases(ds[, c("disaster_nonfd_sev_exposure2_30_IA", "General_TL5B_pref_final_bin", "ea033")]), ]
 ```
 
 ```{r}
@@ -149,16 +321,9 @@ ggplot(sevnfd_tl_trim, aes(x = disaster_nonfd_sev_exposure_30_IA, y = General_TL
 ```
 
 ```{r}
-sevnfd_tl_trim <- sevnfd_tl_trim %>%
-  mutate(
-    General_TL5B_pref_final = ordered(General_TL5B_pref_final,
-      levels = c(1, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4))
-  )
-
-
 mod_sevnfd_tl <- brm(
-    formula = General_TL5B_pref_final ~ disaster_nonfd_sev_exposure_30_IA + mo(ea033),
-  data = sevnfd_tl_trim,
+  formula = General_TL5B_pref_final_bin ~ disaster_nonfd_sev_exposure2_30_IA,
+  data = sevnfd_tl,
   family = cumulative(link = "logit"),
   chains = 4,
   iter = 2000,
@@ -169,30 +334,50 @@ mod_sevnfd_tl <- brm(
   )
 )
 
+mod_sevnfd_tl_cont <- brm(
+  formula = General_TL5B_pref_final_bin ~ disaster_nonfd_sev_exposure2_30_IA + mo(ea033),
+  data = sevnfd_tl_cont,
+  family = cumulative(link = "logit"),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(cauchy(0, 1), class = "Intercept")  # Weakly informative Cauchy prior for the intercept
+  )
+)
+
+
+summary(mod_sevnfd_tl)
 summary(mod_sevnfd_tl)
 ```
-
 ```{r}
-# plot(mod_fd_tl, type = "coef")
-
-c_effects_plot <- conditional_effects(mod_sevnfd_tl, categorical = TRUE)
-c_effects_plot
-```
-
-```{r}
-
-hypothesis(mod_sevnfd_tl, "disaster_nonfd_sev_exposure_30_IA > 0")
+hypothesis(mod_sevnfd_tl, "disaster_nonfd_sev_exposure2_30_IA < 0")
 
 draws_sevnfd <- as_draws_df(mod_sevnfd_tl)
 
-# Plot for Sev
-psevnfd_tl <- draws_sevnfd %>%
-  ggplot(aes(x = b_disaster_nonfd_sev_exposure_30_IA)) +
-  geom_density(fill = "mediumseagreen", alpha = 0.7) +
+x_vals <- draws_sevnfd$b_disaster_nonfd_sev_exposure2_30_IA
+x_lim <- max(abs(x_vals), na.rm = TRUE)
+
+post_prob <- mean(x_vals > 0, na.rm = TRUE)
+
+pnfd_tl <- draws_sevnfd %>%
+  ggplot(aes(x = b_disaster_nonfd_sev_exposure2_30_IA)) +
+  geom_density(fill = "#0070C0", alpha = 0.7) +
   geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  coord_cartesian(xlim = c(-x_lim, x_lim)) +
+  annotate(
+    "text",
+    x = x_lim * 0.95,
+    y = Inf,
+    label = paste0("Post. Prob = ", round(post_prob * 100, 1), "%"),
+    hjust = 1,
+    vjust = 1.5,
+    size = 5
+  ) +
   labs(
-    title = "Cultural Tightness",
-    x = expression(beta ~ "(Severe non food-destroying hazard frequency)"),
+    # title = "Cultural Tightness",
+    x = expression(beta ~ "(Non-food destroying hazards weighted by severity)"),
     y = "Density"
   ) +
   theme_minimal(base_size = 14) +
@@ -201,5 +386,45 @@ psevnfd_tl <- draws_sevnfd %>%
     axis.title = element_text(face = "bold")
   )
 
-psevnfd_tl
+pnfd_tl
+```
+
+
+
+```{r}
+hypothesis(mod_sevnfd_tl_cont, "disaster_nonfd_sev_exposure2_30_IA > 0")
+
+draws_sevnfd_cont <- as_draws_df(mod_sevnfd_tl_cont)
+
+x_vals <- draws_sevnfd_cont$b_disaster_nonfd_sev_exposure2_30_IA
+x_lim <- max(abs(x_vals), na.rm = TRUE)
+
+post_prob <- mean(x_vals > 0, na.rm = TRUE)
+
+pnfd_tl_cont <- draws_sevnfd_cont %>%
+  ggplot(aes(x = b_disaster_nonfd_sev_exposure2_30_IA)) +
+  geom_density(fill = "#0070C0", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  coord_cartesian(xlim = c(-x_lim, x_lim)) +
+  annotate(
+    "text",
+    x = x_lim * 0.95,
+    y = Inf,
+    label = paste0("Post. Prob = ", round(post_prob * 100, 1), "%"),
+    hjust = 1,
+    vjust = 1.5,
+    size = 5
+  ) +
+  labs(
+    # title = "Cultural Tightness",
+    x = expression(beta ~ "(Non-food destroying hazards weighted by severity)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pnfd_tl_cont
 ```

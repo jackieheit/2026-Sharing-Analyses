@@ -1,0 +1,187 @@
+﻿SCCS_ID,socname,focyear,region,ResourceStressFac,Famine,Other_Hazards,Chronic_Scarcity
+1,Nama Hottentot,1860,Africa,NA,NA,2,NA
+2,Kung Bushmen,1950,Africa,NA,NA,4,3
+3,Thonga,1865,Africa,NA,3,NA,NA
+4,Lozi,1900,Africa,NA,NA,NA,1
+5,Mbundu,1890,Africa,NA,1,NA,NA
+6,Suku,1920,Africa,NA,NA,NA,NA
+7,Bemba,1897,Africa,NA,NA,NA,NA
+8,Nyakyusa,1934,Africa,-1.099696823,1,2,1
+9,Hadza,1930,Africa,-0.734297595,1,3,1
+10,Luguru,1925,Africa,NA,NA,NA,3
+11,Kikuyu,1920,Africa,NA,NA,NA,NA
+12,Ganda,1875,Africa,NA,3.5,2,NA
+13,Mbuti,1950,Africa,-1.465096051,1,1,1
+14,Nkundo Mongo,1930,Africa,NA,NA,NA,NA
+15,Banen,1935,Africa,NA,NA,NA,1
+16,Tiv,1920,Africa,NA,NA,NA,NA
+17,Ibo,1935,Africa,NA,NA,NA,1
+18,Fon,1890,Africa,NA,1,NA,1
+19,Ashanti,1895,Africa,NA,NA,NA,NA
+20,Mende,1945,Africa,NA,NA,NA,NA
+21,Wolof,1950,Circum-Mediterranean,0.497676403,2,3,3
+22,Bambara,1902,Africa,NA,NA,3,NA
+23,Tallensi,1934,Africa,0.453084369,2,4,2
+24,Songhai,1940,Circum-Mediterranean,NA,NA,2,NA
+25,Pastoral Fulani,1951,Circum-Mediterranean,0.499676613,3,3,2
+26,Hausa,1900,Circum-Mediterranean,1.277067314,4,4,2
+27,Massa (Masa),1910,Africa,-0.275713877,3,2,1
+28,Azande,1905,Africa,NA,NA,NA,NA
+29,Fur (Darfur),1880,Circum-Mediterranean,-0.68770535,2,2,1
+30,Otoro Nuba,1930,Africa,2.097049838,4,4,4
+31,Shilluk,1910,Africa,NA,NA,NA,1
+32,Mao,1939,Africa,NA,NA,2,1
+33,Kaffa (Kafa),1905,Circum-Mediterranean,NA,NA,NA,NA
+34,Masai,1900,Africa,NA,3,4,NA
+35,Konso,1935,Circum-Mediterranean,NA,2,NA,1
+36,Somali,1900,Circum-Mediterranean,NA,2,2,NA
+37,Amhara,1953,Circum-Mediterranean,-1.053104578,2,1,1
+38,Bogo,1855,Circum-Mediterranean,NA,NA,NA,NA
+39,Kenuzi Nubians,1900,Circum-Mediterranean,NA,3.5,NA,NA
+40,Teda,1950,Circum-Mediterranean,1.685058366,3,4,4
+41,Tuareg,1900,Circum-Mediterranean,NA,NA,NA,NA
+42,Riffians,1926,Circum-Mediterranean,0.132277175,2,2,3
+43,Egyptians,1950,Circum-Mediterranean,NA,NA,4,2
+44,Hebrews,-621,Circum-Mediterranean,NA,2,2,1
+45,Babylonians,-1750,Circum-Mediterranean,NA,NA,2,NA
+46,Rwala Bedouin,1913,Circum-Mediterranean,NA,3,4,NA
+47,Turks,1950,Circum-Mediterranean,1.275067104,3,4,3
+48,Gheg Albanians,1910,Circum-Mediterranean,NA,NA,NA,2
+49,Romans,110,Circum-Mediterranean,NA,2,NA,1
+50,Basques,1934,Circum-Mediterranean,NA,NA,NA,NA
+51,Irish,1932,Circum-Mediterranean,NA,NA,NA,2
+52,Lapps,1950,Circum-Mediterranean,NA,1,1,NA
+53,Yurak Samoyed,1894,East Eurasia,0.865075841,3,4,2
+54,Russians,1955,Circum-Mediterranean,NA,NA,4,1
+55,Abkhaz,1880,Circum-Mediterranean,NA,NA,3,1
+56,Armenians,1843,Circum-Mediterranean,NA,NA,NA,NA
+57,Kurd,1951,Circum-Mediterranean,NA,1,1,NA
+58,Basseri,1958,East Eurasia,-1.099696823,1,2,1
+59,Punjabi (West),1950,East Eurasia,0.499676613,3,3,2
+60,Gond,1938,East Eurasia,-1.465096051,1,1,1
+61,Toda,1900,East Eurasia,NA,NA,NA,1
+62,Santal,1940,East Eurasia,NA,NA,2,3
+63,Uttar Pradesh,1945,East Eurasia,NA,NA,2,NA
+64,Burusho,1934,East Eurasia,NA,NA,1,2
+65,Kazak,1885,East Eurasia,0.294680982,3,3,1.5
+66,Khalka Mongols,1920,East Eurasia,NA,2,4,NA
+67,Lolo,1910,East Eurasia,NA,NA,NA,NA
+68,Lepcha,1937,East Eurasia,-1.465096051,1,1,1
+69,Garo,1955,East Eurasia,NA,NA,NA,1
+70,Lakher,1930,East Eurasia,NA,3,3,NA
+71,Burmese,1965,East Eurasia,NA,NA,NA,1
+72,Lamet,1940,East Eurasia,0.134277385,3,2,2
+73,Vietnamese,1930,East Eurasia,NA,1,4,NA
+74,Rhade,1962,East Eurasia,NA,NA,NA,NA
+75,Khmer,1292,East Eurasia,NA,1,NA,1
+76,Siamese,1955,East Eurasia,-0.734297595,1,3,1
+77,Semang,1925,East Eurasia,NA,NA,NA,NA
+78,Nicobarese,1870,East Eurasia,NA,NA,NA,1
+79,Andamanese,1860,East Eurasia,NA,NA,NA,1
+80,Vedda,1860,East Eurasia,NA,NA,NA,NA
+81,Tanala,1925,East Eurasia,NA,1,NA,1
+82,Negri Sembilan,1958,East Eurasia,NA,NA,NA,NA
+83,Javanese,1954,Insular Pacific,NA,1,3,NA
+84,Balinese,1958,Insular Pacific,NA,NA,2,1
+85,Iban,1950,Insular Pacific,NA,NA,2,NA
+86,Badjau,1963,Insular Pacific,NA,NA,1,1
+87,Toradja,1910,Insular Pacific,NA,NA,NA,NA
+88,Tobelorese,1900,Insular Pacific,NA,NA,NA,NA
+89,Alorese,1938,Insular Pacific,NA,1,NA,NA
+90,Tiwi,1929,Insular Pacific,-1.465096051,1,1,1
+91,Aranda,1896,Insular Pacific,NA,2,2,NA
+92,Orokaiva,1925,Insular Pacific,NA,1,NA,2
+93,Kimam,1960,Insular Pacific,NA,3,4,NA
+94,Kapauku,1955,Insular Pacific,NA,1,NA,1
+95,Kwoma,1960,Insular Pacific,NA,1,NA,1
+96,Manus,1937,Insular Pacific,-1.465096051,1,1,1
+97,New Ireland,1930,Insular Pacific,NA,NA,NA,1
+98,Trobrianders,1914,Insular Pacific,1.277067314,4,4,2
+99,Siuai,1939,Insular Pacific,NA,3,NA,1
+100,Tikopia,1930,Insular Pacific,0.865075841,3,4,2
+101,Pentecost,1953,Insular Pacific,NA,NA,NA,NA
+102,Mbau Fijians,1840,Insular Pacific,NA,NA,1,1
+103,Ajie,1845,Insular Pacific,NA,NA,NA,NA
+104,Maori,1820,Insular Pacific,1.275067104,3,4,3
+105,Marquesans,1800,Insular Pacific,NA,NA,NA,NA
+106,Western Samoans,1829,Insular Pacific,0.043093106,2,4,1
+107,Gilbertese,1890,Insular Pacific,NA,NA,NA,1
+108,Marshallese,1900,Insular Pacific,0.499676613,3,3,2
+109,Trukese,1947,Insular Pacific,NA,NA,2,NA
+110,Yapese,1910,Insular Pacific,NA,NA,4,NA
+111,Palauans,1947,Insular Pacific,NA,NA,NA,NA
+112,Ifugao,1910,Insular Pacific,-0.734297595,1,3,1
+113,Atayal,1930,Insular Pacific,NA,NA,NA,NA
+114,Chinese,1936,East Eurasia,NA,NA,NA,NA
+115,Manchu,1915,East Eurasia,NA,NA,NA,NA
+116,Koreans,1947,East Eurasia,0.132277175,2,2,3
+117,Japanese,1950,East Eurasia,NA,1,2,NA
+118,Ainu,1880,East Eurasia,-0.643113316,2,1,2
+119,Gilyak,1890,East Eurasia,0.911668086,4,3,2
+120,Yukaghir,1850,East Eurasia,NA,NA,NA,NA
+121,Chukchee,1900,East Eurasia,-0.322306122,2,3,1
+122,Ingalik,1885,North America,NA,NA,NA,NA
+123,Aleut,1800,North America,NA,3,NA,NA
+124,Copper Eskimo,1915,North America,1.277067314,4,4,2
+125,Montagnais,1910,North America,NA,3,NA,NA
+126,Micmac,1650,North America,NA,2,NA,2
+127,Saulteaux,1930,North America,NA,NA,NA,NA
+128,Slave,1940,North America,NA,NA,NA,2
+129,Kaska,1900,North America,NA,2,NA,2
+130,Eyak,1890,North America,NA,1,1,NA
+131,Haida,1875,North America,NA,NA,1,1
+132,Bellacoola,1880,North America,-1.465096051,1,1,1
+133,Twana,1860,North America,NA,1,NA,1
+134,Yurok,1850,North America,NA,NA,NA,1
+135,Pomo (Eastern),1850,North America,NA,1,NA,1
+136,Yokuts (Lake),1850,North America,NA,NA,NA,NA
+137,Paiute (North.),1870,North America,NA,2,NA,2
+138,Klamath,1860,North America,-0.277714088,2,2,2
+139,Kutenai,1890,North America,NA,1,NA,1
+140,Gros Ventre,1880,North America,NA,2,NA,1
+141,Hidatsa,1836,North America,-0.277714088,2,2,2
+142,Pawnee,1867,North America,1.273066893,2,4,4
+143,Omaha,1860,North America,NA,1,NA,NA
+144,Huron,1634,North America,NA,4,4,NA
+145,Creek,1800,North America,NA,NA,NA,NA
+146,Natchez,1718,North America,NA,NA,NA,1
+147,Comanche,1870,North America,NA,NA,NA,2
+148,Chiricahua,1870,North America,NA,1,NA,2
+149,Zuni,1880,North America,NA,NA,NA,NA
+150,Havasupai,1918,North America,NA,NA,4,NA
+151,Papago,1910,North America,0.865075841,3,4,2
+152,Huichol,1890,North America,NA,NA,NA,NA
+153,Aztec,1520,North America,NA,4,NA,2
+154,Popoluca,1940,North America,NA,1,NA,1
+155,Quiche,1930,South America,NA,1,NA,1
+156,Miskito,1921,South America,NA,NA,1,1
+157,Bribri,1917,South America,NA,NA,NA,1
+158,Cuna (Tule),1927,South America,NA,NA,NA,NA
+159,Goajiro,1947,South America,0.453084369,2,4,2
+160,Haitians,1935,South America,1.273066893,2,4,4
+161,Callinago,1650,South America,NA,NA,NA,1
+162,Warrau,1935,South America,NA,NA,4,NA
+163,Yanomamo,1965,South America,NA,NA,NA,NA
+164,Carib (Barama),1932,South America,-0.322306122,2,3,1
+165,Saramacca,1928,South America,NA,2,2,NA
+166,Mundurucu,1850,South America,NA,NA,NA,NA
+167,Cubeo (Tucano),1939,South America,NA,NA,NA,2
+168,Cayapa,1908,South America,-1.465096051,1,1,1
+169,Jivaro,1920,South America,NA,1,NA,1
+170,Amahuaca,1960,South America,NA,NA,NA,NA
+171,Inca,1530,South America,NA,1,NA,NA
+172,Aymara,1940,South America,NA,NA,4,4
+173,Siriono,1942,South America,-1.055104788,1,1,2
+174,Nambicuara,1940,South America,NA,NA,NA,2
+175,Trumai,1938,South America,NA,NA,NA,1
+176,Timbira,1915,South America,NA,NA,NA,NA
+177,Tupinamba,1550,South America,NA,NA,NA,1
+178,Botocudo,1884,South America,NA,NA,NA,NA
+179,Shavante,1958,South America,NA,NA,1,1
+180,Aweikoma,1932,South America,NA,NA,NA,2
+181,Cayua,1890,South America,NA,NA,NA,NA
+182,Lengua,1889,South America,NA,NA,4,NA
+183,Abipon,1750,South America,NA,1,NA,1
+184,Mapuche,1950,South America,0.08568493,1,3,3
+185,Tehuelche,1870,South America,NA,NA,4,1
+186,Yahgan,1865,South America,-0.368898366,1,4,1

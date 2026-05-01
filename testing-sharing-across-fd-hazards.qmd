@@ -51,6 +51,19 @@ cor.test(
 )
 
 
+cor.test(
+  ds_FA$S3_Resolved_IA_TR,
+  ds_FA$ea033,
+  use = "complete.obs",
+  method = "spearman"
+)
+
+cor.test(
+  ds_FA$S2_Resolved_IA_TR,
+  ds_FA$ea033,
+  use = "complete.obs",
+  method = "spearman"
+)
 ```
 
 
@@ -354,7 +367,7 @@ pfdS3_nonfd
 
 ## Daily Food Sharing
 ```{r}
-sevnfd_S2 <- ds_FA[complete.cases(ds_FA[, c("disaster_nonfd_sev_exposure_30_IA", "S2_Resolved_IA_TR")]), ]
+sevnfd_S2 <- ds_FA[complete.cases(ds_FA[, c("disaster_nonfd_sev_exposure_30_IA", "S2_Resolved_IA_TR", "ea033")]), ]
 ```
 
 ```{r}
@@ -382,8 +395,8 @@ cor(
 
 ```{r}
 mod_sevnfd_S2 <- brm(
-  formula = S2_Resolved_IA_TR ~ disaster_nonfd_sev_exposure_30_IA,
-  data = sevnfd_S2_trim,
+  formula = S2_Resolved_IA_TR ~ disaster_nonfd_sev_exposure_30_IA + mo(ea033),
+  data = sevnfd_S2,
   family = bernoulli(link = "logit"),
   chains = 4,
   iter = 2000,

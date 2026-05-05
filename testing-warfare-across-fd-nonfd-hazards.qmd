@@ -78,7 +78,9 @@ ggplot(var_spreads, aes(x = ovfreq_R , y = fd_freq_30_IA)) +
 ## Overall frequency of warfare
 
 ```{r}
-fd_ovfreq_IA <- var_spreads[complete.cases(var_spreads[, c("fd_freq_30_IA", "ovfreq_R", "ea033")]), ] 
+fd_ovfreq <- var_spreads[complete.cases(var_spreads[, c("fd_freq_30_IA", "ovfreq_R")]), ] 
+
+fd_ovfreq_cont <- var_spreads[complete.cases(var_spreads[, c("fd_freq_30_IA", "ovfreq_R", "ea033")]), ] 
 ```
 
 ```{r}
@@ -110,9 +112,9 @@ summary(test_no26)
 ```
 
 ```{r}
-mod_fd_ovfreq_IA <- brm(
-  formula = ovfreq_R ~ fd_freq_30_IA + mo(ea033),
-  data = fd_ovfreq_IA,
+mod_fd_ovfreq <- brm(
+  formula = ovfreq_R ~ fd_freq_30_IA,
+  data = fd_ovfreq,
   family = gaussian(),
   chains = 4,
   iter = 2000,
@@ -123,27 +125,54 @@ mod_fd_ovfreq_IA <- brm(
   )
 )
 
-summary(mod_fd_ovfreq_IA)
-plot(mod_fd_ovfreq_IA, type = "coef")
+mod_fd_ovfreq_cont <- brm(
+  formula = ovfreq_R ~ fd_freq_30_IA + mo(ea033),
+  data = fd_ovfreq_cont,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(cauchy(0, 1), class = "Intercept")  # Weakly informative Cauchy prior for the intercept
+  )
+)
 
-conditional_effects_plot <- conditional_effects(mod_fd_ovfreq_IA)
+
+summary(mod_fd_ovfreq)
+summary(mod_fd_ovfreq_cont)
+plot(mod_fd_ovfreq_cont, type = "coef")
+
+conditional_effects_plot <- conditional_effects(mod_fd_ovfreq_cont)
 plot(conditional_effects_plot)
 ```
-
 ```{r}
-# in the our better nature paper, daily food sharing was negatively associated with food destroying hazards
-hypothesis(mod_fd_ovfreq_IA, "fd_freq_30_IA > 0") # they do!
+hypothesis(mod_fd_ovfreq, "fd_freq_30_IA > 0") # they do!
 
-draws2 <- as_draws_df(mod_fd_ovfreq_IA)
+draws2 <- as_draws_df(mod_fd_ovfreq)
 
-# Plot for Sev
-pfd_ovfreq_IA <- draws2 %>%
+
+x_vals <- draws2$b_fd_freq_30_IA
+x_lim <- max(abs(x_vals), na.rm = TRUE)
+
+post_prob <- mean(x_vals > 0, na.rm = TRUE)
+
+pfd_ovfreq <- draws2 %>%
   ggplot(aes(x = b_fd_freq_30_IA)) +
-  geom_density(fill = "purple", alpha = 0.7) +
+  geom_density(fill = "#ED7D31", alpha = 0.7) +
   geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  coord_cartesian(xlim = c(-x_lim, x_lim)) +
+  annotate(
+    "text",
+    x = x_lim * 0.95,
+    y = Inf,
+    label = paste0("Post. Prob = ", round(post_prob * 100, 1), "%"),
+    hjust = 1,
+    vjust = 1.5,
+    size = 5
+  ) +
   labs(
-    title = "Overall Warfare Frequency",
-    x = expression(beta ~ "(Food Destroying Hazard Frequency (IA))"),
+    x = expression(beta ~ "(Food destroying hazards weighted by severity)"),
     y = "Density"
   ) +
   theme_minimal(base_size = 14) +
@@ -152,8 +181,49 @@ pfd_ovfreq_IA <- draws2 %>%
     axis.title = element_text(face = "bold")
   )
 
-pfd_ovfreq_IA
+pfd_ovfreq_cont
 ```
+
+
+```{r}
+# in the our better nature paper, daily food sharing was negatively associated with food destroying hazards
+hypothesis(mod_fd_ovfreq_cont, "fd_freq_30_IA > 0") # they do!
+
+draws2 <- as_draws_df(mod_fd_ovfreq_cont)
+
+
+x_vals <- draws2$b_fd_freq_30_IA
+x_lim <- max(abs(x_vals), na.rm = TRUE)
+
+post_prob <- mean(x_vals > 0, na.rm = TRUE)
+
+pfd_ovfreq_cont <- draws2 %>%
+  ggplot(aes(x = b_fd_freq_30_IA)) +
+  geom_density(fill = "#ED7D31", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  coord_cartesian(xlim = c(-x_lim, x_lim)) +
+  annotate(
+    "text",
+    x = x_lim * 0.95,
+    y = Inf,
+    label = paste0("Post. Prob = ", round(post_prob * 100, 1), "%"),
+    hjust = 1,
+    vjust = 1.5,
+    size = 5
+  ) +
+  labs(
+    x = expression(beta ~ "(Food destroying hazards weighted by severity)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pfd_ovfreq_cont
+```
+
 
 ```{r}
 fd_ovfreq <- var_spreads[complete.cases(var_spreads[, c("fd_freq_30", "ovfreq_R")]), ] 
@@ -756,8 +826,11 @@ p_nonfd_intrfreq_IA
 ## Overall Warfare
 
 ```{r}
-nonfd_ovfreq2 <- var_spreads[
-  complete.cases(var_spreads[, c("nonfd_2_freq_30", "ovfreq_R")]),
+nonfd_ovfreq2 <- var_spreads[complete.cases(var_spreads[, c("nonfd_2_freq_30", "ovfreq_R")]),
+]
+
+
+nonfd_ovfreq2_cont <- var_spreads[complete.cases(var_spreads[, c("nonfd_2_freq_30", "ovfreq_R", "ea033")]),
 ]
 
 ggplot(nonfd_ovfreq2, aes(x = nonfd_2_freq_30, y = ovfreq_R)) +
@@ -779,7 +852,22 @@ mod_nonfd_ovfreq2 <- brm(
   )
 )
 
+mod_nonfd_ovfreq2_cont <- brm(
+  formula = ovfreq_R ~ nonfd_2_freq_30 + mo(ea033),
+  data = nonfd_ovfreq2,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),
+    prior(cauchy(0, 1), class = "Intercept")
+  )
+)
+
 summary(mod_nonfd_ovfreq2)
+summary(mod_nonfd_ovfreq2_cont)
+
 plot(mod_nonfd_ovfreq2, type = "coef")
 
 plot(conditional_effects(mod_nonfd_ovfreq2))
@@ -805,8 +893,48 @@ p_nonfd_ovfreq2
 ```
 
 ```{r}
+draws2 <- as_draws_df(mod_nonfd_ovfreq2)
+
+
+x_vals <- draws2$b_nonfd_2_freq_30
+x_lim <- max(abs(x_vals), na.rm = TRUE)
+
+post_prob <- mean(x_vals > 0, na.rm = TRUE)
+
+pnfd_ovfreq <- draws2 %>%
+  ggplot(aes(x = b_nonfd_2_freq_30)) +
+  geom_density(fill = "#0070C0", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  coord_cartesian(xlim = c(-x_lim, x_lim)) +
+  annotate(
+    "text",
+    x = x_lim * 0.95,
+    y = Inf,
+    label = paste0("Post. Prob = ", round(post_prob * 100, 1), "%"),
+    hjust = 1,
+    vjust = 1.5,
+    size = 5
+  ) +
+  labs(
+    x = expression(beta ~ "(Food destroying hazards weighted by severity)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pnfd_ovfreq
+```
+
+```{r}
 nonfd_ovfreq2_IA <- var_spreads[
   complete.cases(var_spreads[, c("nonfd_2_freq_30_IA", "ovfreq_R")]),
+]
+
+nonfd_ovfreq2_IA_cont <- var_spreads[
+  complete.cases(var_spreads[, c("nonfd_2_freq_30_IA", "ovfreq_R","ea033")]),
 ]
 
 ggplot(nonfd_ovfreq2_IA, aes(x = nonfd_2_freq_30_IA, y = ovfreq_R)) +
@@ -828,7 +956,22 @@ mod_nonfd_ovfreq2_IA <- brm(
   )
 )
 
+mod_nonfd_ovfreq2_IA_cont <- brm(
+  formula = ovfreq_R ~ nonfd_2_freq_30_IA + mo(ea033),
+  data = nonfd_ovfreq2_IA,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),
+    prior(cauchy(0, 1), class = "Intercept")
+  )
+)
+
 summary(mod_nonfd_ovfreq2_IA)
+summary(mod_nonfd_ovfreq2_IA_cont)
+
 plot(mod_nonfd_ovfreq2_IA, type = "coef")
 
 plot(conditional_effects(mod_nonfd_ovfreq2_IA))
@@ -852,6 +995,82 @@ p_nonfd_ovfreq2_IA <- draws2 %>%
 
 p_nonfd_ovfreq2_IA
 ```
+
+```{r}
+draws2 <- as_draws_df(mod_nonfd_ovfreq2_IA)
+
+
+x_vals <- draws2$b_nonfd_2_freq_30_IA
+x_lim <- max(abs(x_vals), na.rm = TRUE)
+
+post_prob <- mean(x_vals < 0, na.rm = TRUE)
+
+pnfd_ovfreq_IA <- draws2 %>%
+  ggplot(aes(x = b_nonfd_2_freq_30_IA)) +
+  geom_density(fill = "#0070C0", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  coord_cartesian(xlim = c(-x_lim, x_lim)) +
+  annotate(
+    "text",
+    x = x_lim * 0.95,
+    y = Inf,
+    label = paste0("Post. Prob = ", round(post_prob * 100, 1), "%"),
+    hjust = 1,
+    vjust = 1.5,
+    size = 5
+  ) +
+  labs(
+    x = expression(beta ~ "(Non-food destroying hazards weighted by severity)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pnfd_ovfreq_IA
+```
+
+
+```{r}
+draws2 <- as_draws_df(mod_nonfd_ovfreq2_IA_cont)
+
+
+x_vals <- draws2$b_nonfd_2_freq_30_IA
+x_lim <- max(abs(x_vals), na.rm = TRUE)
+
+post_prob <- mean(x_vals < 0, na.rm = TRUE)
+
+pnfd_ovfreq_IA_cont <- draws2 %>%
+  ggplot(aes(x = b_nonfd_2_freq_30_IA)) +
+  geom_density(fill = "#0070C0", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  coord_cartesian(xlim = c(-x_lim, x_lim)) +
+  annotate(
+    "text",
+    x = x_lim * 0.95,
+    y = Inf,
+    label = paste0("Post. Prob = ", round(post_prob * 100, 1), "%"),
+    hjust = 1,
+    vjust = 1.5,
+    size = 5
+  ) +
+  labs(
+    x = expression(beta ~ "(Non-food destroying hazards weighted by severity)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pnfd_ovfreq_IA_cont
+```
+
+
+
 
 ## External Warfare
 

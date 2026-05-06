@@ -66,10 +66,13 @@ cor.test(
 )
 ```
 
-
 ```{r}
 data_clean_S3 <- ds_FA[complete.cases(ds_FA[, c("disaster_h9a_sev_exposure_30_IA", "S3_Resolved_IA_TR")]), ]
+data_clean_S3_cont <- ds_FA[complete.cases(ds_FA[, c("disaster_h9a_sev_exposure_30_IA", "S3_Resolved_IA_TR", "ea033")]), ]
+```
 
+
+```{r}
 # quasi complete separation...
 ggplot(data_clean_S3, aes(x = fd_hazards_freq_PC, y = S3_Resolved_IA_TR)) +
   geom_jitter(height = 0.05, alpha = 0.6) +
@@ -98,16 +101,30 @@ plot(conditional_effects_plot)
 # backed by previous results, we're curious to see if food destroying, severe droughts, and LAPD hazard frequencies increase the odds of seasonal food sharing
 hypothesis(mod_S3, "disaster_h9a_sev_exposure_30_IA > 0") # they do!
 
-draws1 <- as_draws_df(mod_S3)
+drawS3 <- as_draws_df(mod_S3)
 
-# Plot for Sev
-pfdS3 <- draws1 %>%
+
+x_vals <- drawS3$b_disaster_h9a_sev_exposure_30_IA
+x_lim <- max(abs(x_vals), na.rm = TRUE)
+
+post_prob <- mean(x_vals > 0, na.rm = TRUE)
+
+pfdS3 <- drawS3 %>%
   ggplot(aes(x = b_disaster_h9a_sev_exposure_30_IA)) +
-  geom_density(fill = "coral1", alpha = 0.7) +
+  geom_density(fill = "#ED7D31", alpha = 0.7) +
   geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  coord_cartesian(xlim = c(-x_lim, x_lim)) +
+  annotate(
+    "text",
+    x = x_lim * 0.95,
+    y = Inf,
+    label = paste0("Post. Prob = ", round(post_prob * 100, 1), "%"),
+    hjust = 1,
+    vjust = 1.5,
+    size = 5
+  ) +
   labs(
-    title = "Seasonal Food Sharing",
-    x = expression(beta ~ "(Severity Exposure to Food Destroying Hazards)"),
+    x = expression(beta ~ "(Food destroying hazards weighted by severity)"),
     y = "Density"
   ) +
   theme_minimal(base_size = 14) +
@@ -119,6 +136,65 @@ pfdS3 <- draws1 %>%
 pfdS3
 ```
 
+```{r}
+mod_S3_cont <- brm(
+  formula = S3_Resolved_IA_TR ~ disaster_h9a_sev_exposure_30_IA + mo(ea033),
+  data = data_clean_S3_cont,
+  family = bernoulli(link = "logit"),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(cauchy(0, 1), class = "Intercept")  # Weakly informative Cauchy prior for the intercept
+  )
+)
+
+summary(mod_S3_cont)
+plot(mod_S3_cont, type = "coef")
+
+conditional_effects_plot <- conditional_effects(mod_S3_cont)
+plot(conditional_effects_plot)
+
+# backed by previous results, we're curious to see if food destroying, severe droughts, and LAPD hazard frequencies increase the odds of seasonal food sharing
+hypothesis(mod_S3_cont, "disaster_h9a_sev_exposure_30_IA > 0") # they do!
+
+drawS3_cont <- as_draws_df(mod_S3_cont)
+
+
+x_vals <- drawS3_cont$b_disaster_h9a_sev_exposure_30_IA
+x_lim <- max(abs(x_vals), na.rm = TRUE)
+
+post_prob <- mean(x_vals > 0, na.rm = TRUE)
+
+pfdS3_cont <- drawS3_cont %>%
+  ggplot(aes(x = b_disaster_h9a_sev_exposure_30_IA)) +
+  geom_density(fill = "#ED7D31", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  coord_cartesian(xlim = c(-x_lim, x_lim)) +
+  annotate(
+    "text",
+    x = x_lim * 0.95,
+    y = Inf,
+    label = paste0("Post. Prob = ", round(post_prob * 100, 1), "%"),
+    hjust = 1,
+    vjust = 1.5,
+    size = 5
+  ) +
+  labs(
+    x = expression(beta ~ "(Food destroying hazards weighted by severity)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pfdS3_cont
+```
+
+
 
 
 
@@ -127,6 +203,7 @@ pfdS3
 
 ```{r}
 data_clean_S2 <- ds_FA[complete.cases(ds_FA[, c("disaster_h9a_sev_exposure_30_IA", "S2_Resolved_IA_TR")]), ]
+data_clean_S2_cont <- ds_FA[complete.cases(ds_FA[, c("disaster_h9a_sev_exposure_30_IA", "S2_Resolved_IA_TR", "ea033")]), ]
 ```
 
 ```{r}
@@ -149,7 +226,7 @@ ggplot(S2_data_trim, aes(x = disaster_h9a_sev_exposure_30_IA, y = S2_Resolved_IA
 ```{r}
 mod_S2 <- brm(
   formula = S2_Resolved_IA_TR ~ disaster_h9a_sev_exposure_30_IA,
-  data = S2_data_trim,
+  data = data_clean_S2,
   family = bernoulli(link = "logit"),
   chains = 4,
   iter = 2000,
@@ -160,7 +237,22 @@ mod_S2 <- brm(
   )
 )
 
+mod_S2_cont <- brm(
+  formula = S2_Resolved_IA_TR ~ disaster_h9a_sev_exposure_30_IA + mo(ea033),
+  data = data_clean_S2_cont,
+  family = bernoulli(link = "logit"),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(cauchy(0, 1), class = "Intercept")  # Weakly informative Cauchy prior for the intercept
+  )
+)
+
+
 summary(mod_S2)
+summary(mod_S2_cont)
 ```
 
 ```{r}
@@ -175,16 +267,29 @@ plot(conditional_effects_plot)
 # in the our better nature paper, daily food sharing was negatively associated with food destroying hazards
 hypothesis(mod_S2, "disaster_h9a_sev_exposure_30_IA < 0") # they do!
 
-draws2 <- as_draws_df(mod_S2)
+drawS2 <- as_draws_df(mod_S2)
 
-# Plot for Sev
-pfdS2 <- draws2 %>%
+x_vals <- drawS2$b_disaster_h9a_sev_exposure_30_IA
+x_lim <- max(abs(x_vals), na.rm = TRUE)
+
+post_prob <- mean(x_vals < 0, na.rm = TRUE)
+
+pfdS2 <- drawS2 %>%
   ggplot(aes(x = b_disaster_h9a_sev_exposure_30_IA)) +
-  geom_density(fill = "deepskyblue", alpha = 0.7) +
+  geom_density(fill = "#ED7D31", alpha = 0.7) +
   geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  coord_cartesian(xlim = c(-x_lim, x_lim)) +
+  annotate(
+    "text",
+    x = x_lim * 0.95,
+    y = Inf,
+    label = paste0("Post. Prob = ", round(post_prob * 100, 1), "%"),
+    hjust = 1,
+    vjust = 1.5,
+    size = 5
+  ) +
   labs(
-    title = "Daily Food Sharing",
-    x = expression(beta ~ "(Severity Exposure to Food Destroying Hazards)"),
+    x = expression(beta ~ "(Food destroying hazards weighted by severity)"),
     y = "Density"
   ) +
   theme_minimal(base_size = 14) +
@@ -195,6 +300,42 @@ pfdS2 <- draws2 %>%
 
 pfdS2
 ```
+
+```{r}
+drawS2_cont <- as_draws_df(mod_S2_cont)
+
+x_vals <- drawS2_cont$b_disaster_h9a_sev_exposure_30_IA
+x_lim <- max(abs(x_vals), na.rm = TRUE)
+
+post_prob <- mean(x_vals < 0, na.rm = TRUE)
+
+pfdS2_cont <- drawS2_cont %>%
+  ggplot(aes(x = b_disaster_h9a_sev_exposure_30_IA)) +
+  geom_density(fill = "#ED7D31", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  coord_cartesian(xlim = c(-x_lim, x_lim)) +
+  annotate(
+    "text",
+    x = x_lim * 0.95,
+    y = Inf,
+    label = paste0("Post. Prob = ", round(post_prob * 100, 1), "%"),
+    hjust = 1,
+    vjust = 1.5,
+    size = 5
+  ) +
+  labs(
+    x = expression(beta ~ "(Food destroying hazards weighted by severity)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pfdS2_cont
+```
+
 
 ### fd freq PC
 ```{r}
@@ -286,7 +427,7 @@ ggsave(
 # Severe Non-Food destroying
 ```{r}
 cor(
-  ds_FA$disaster_nonfd_sev_exposure_30,
+  ds_FA$disaster_nonfd_sev_exposure2_30,
   ds_FA$disaster_h9a_sev_exposure_30,
   use = "complete.obs",
   method = "spearman"
@@ -295,7 +436,9 @@ cor(
 # Severe Non Food destroying Hazards
 ## Seasonal Food Sharing
 ```{r}
-sevnfd_S3 <- ds_FA[complete.cases(ds_FA[, c("disaster_nonfd_sev_exposure_30_IA", "S3_Resolved_IA_TR")]), ]
+sevnfd_S3 <- ds_FA[complete.cases(ds_FA[, c("disaster_nonfd_sev_exposure2_30_IA", "S3_Resolved_IA_TR")]), ]
+
+sevnfd_S3_cont <- ds_FA[complete.cases(ds_FA[, c("disaster_nonfd_sev_exposure2_30_IA", "S3_Resolved_IA_TR", "ea033")]), ]
 ```
 
 ```{r}
@@ -316,8 +459,8 @@ ggplot(sevnfd_S3_trim, aes(x = disaster_nonfd_sev_exposure_30_IA, y = S3_Resolve
 
 ```{r}
 mod_sevnfd_S3 <- brm(
-  formula = S3_Resolved_IA_TR ~ disaster_nonfd_sev_exposure_30_IA,
-  data = sevnfd_S3_trim,
+  formula = S3_Resolved_IA_TR ~ disaster_nonfd_sev_exposure2_30_IA,
+  data = sevnfd_S3,
   family = bernoulli(link = "logit"),
   chains = 4,
   iter = 2000,
@@ -328,7 +471,22 @@ mod_sevnfd_S3 <- brm(
   )
 )
 
+mod_sevnfd_S3_cont <- brm(
+  formula = S3_Resolved_IA_TR ~ disaster_nonfd_sev_exposure2_30_IA + mo(ea033),
+  data = sevnfd_S3_cont,
+  family = bernoulli(link = "logit"),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(cauchy(0, 1), class = "Intercept")  # Weakly informative Cauchy prior for the intercept
+  )
+)
+
+
 summary(mod_sevnfd_S3)
+summary(mod_sevnfd_S3_cont)
 ```
 
 ```{r}
@@ -341,18 +499,32 @@ plot(c_effects_plot)
 
 ```{r}
 # in the our better nature paper, there was a positive relationship between seasonal food sharing and severe non-fd hazards
-hypothesis(mod_sevnfd_S3, "disaster_nonfd_sev_exposure_30_IA < 0") # they do!
+hypothesis(mod_sevnfd_S3, "disaster_nonfd_sev_exposure2_30_IA > 0") # they do!
 
 drawS3 <- as_draws_df(mod_sevnfd_S3)
 
-# Plot for Sev
+
+x_vals <- drawS3$b_disaster_nonfd_sev_exposure2_30_IA
+x_lim <- max(abs(x_vals), na.rm = TRUE)
+
+post_prob <- mean(x_vals > 0, na.rm = TRUE)
+
 pfdS3_nonfd <- drawS3 %>%
-  ggplot(aes(x = b_disaster_nonfd_sev_exposure_30_IA)) +
-  geom_density(fill = "coral1", alpha = 0.7) +
+  ggplot(aes(x = b_disaster_nonfd_sev_exposure2_30_IA)) +
+  geom_density(fill = "#0070C0", alpha = 0.7) +
   geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  coord_cartesian(xlim = c(-x_lim, x_lim)) +
+  annotate(
+    "text",
+    x = x_lim * 0.95,
+    y = Inf,
+    label = paste0("Post. Prob = ", round(post_prob * 100, 1), "%"),
+    hjust = 1,
+    vjust = 1.5,
+    size = 5
+  ) +
   labs(
-    title = "Seasonal Food Sharing",
-    x = expression(beta ~ "(Weighted exposure to severe non-food-destroying hazards)"),
+    x = expression(beta ~ "(Non-food destroying hazards weighted by severity)"),
     y = "Density"
   ) +
   theme_minimal(base_size = 14) +
@@ -363,11 +535,50 @@ pfdS3_nonfd <- drawS3 %>%
 
 pfdS3_nonfd
 ```
+```{r}
+hypothesis(mod_sevnfd_S3_cont, "disaster_nonfd_sev_exposure2_30_IA > 0") # they do!
+
+drawS3_cont <- as_draws_df(mod_sevnfd_S3_cont)
+
+
+x_vals <- drawS3_cont$b_disaster_nonfd_sev_exposure2_30_IA
+x_lim <- max(abs(x_vals), na.rm = TRUE)
+
+post_prob <- mean(x_vals > 0, na.rm = TRUE)
+
+pfdS3_nonfd_cont <- drawS3_cont %>%
+  ggplot(aes(x = b_disaster_nonfd_sev_exposure2_30_IA)) +
+  geom_density(fill = "#0070C0", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  coord_cartesian(xlim = c(-x_lim, x_lim)) +
+  annotate(
+    "text",
+    x = x_lim * 0.95,
+    y = Inf,
+    label = paste0("Post. Prob = ", round(post_prob * 100, 1), "%"),
+    hjust = 1,
+    vjust = 1.5,
+    size = 5
+  ) +
+  labs(
+    x = expression(beta ~ "(Non-food destroying hazards weighted by severity)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pfdS3_nonfd_cont
+```
 
 
 ## Daily Food Sharing
 ```{r}
-sevnfd_S2 <- ds_FA[complete.cases(ds_FA[, c("disaster_nonfd_sev_exposure_30_IA", "S2_Resolved_IA_TR", "ea033")]), ]
+sevnfd_S2 <- ds_FA[complete.cases(ds_FA[, c("disaster_nonfd_sev_exposure2_30_IA", "S2_Resolved_IA_TR")]), ]
+
+sevnfd_S2_cont <- ds_FA[complete.cases(ds_FA[, c("disaster_nonfd_sev_exposure2_30_IA", "S2_Resolved_IA_TR", "ea033")]), ]
 ```
 
 ```{r}
@@ -395,7 +606,7 @@ cor(
 
 ```{r}
 mod_sevnfd_S2 <- brm(
-  formula = S2_Resolved_IA_TR ~ disaster_nonfd_sev_exposure_30_IA + mo(ea033),
+  formula = S2_Resolved_IA_TR ~ disaster_nonfd_sev_exposure2_30_IA,
   data = sevnfd_S2,
   family = bernoulli(link = "logit"),
   chains = 4,
@@ -407,9 +618,21 @@ mod_sevnfd_S2 <- brm(
   )
 )
 
+mod_sevnfd_S2_cont <- brm(
+  formula = S2_Resolved_IA_TR ~ disaster_nonfd_sev_exposure2_30_IA + mo(ea033),
+  data = sevnfd_S2_cont,
+  family = bernoulli(link = "logit"),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  prior = c(
+    prior(normal(0, 2.5), class = "b"),  # Weakly informative normal priors for the coefficients
+    prior(cauchy(0, 1), class = "Intercept")  # Weakly informative Cauchy prior for the intercept
+  )
+)
+
+summary(mod_sevnfd_S2_cont)
 summary(mod_sevnfd_S2)
-
-
 ```
 
 ```{r}
@@ -417,6 +640,84 @@ plot(mod_sevnfd_S2, type = "coef")
 
 c_effects_plot <- conditional_effects(mod_sevnfd_S2)
 plot(c_effects_plot)
+```
+
+```{r}
+hypothesis(mod_sevnfd_S2, "disaster_nonfd_sev_exposure2_30_IA > 0") # they do!
+
+drawS2 <- as_draws_df(mod_sevnfd_S2)
+
+
+x_vals <- drawS2$b_disaster_nonfd_sev_exposure2_30_IA
+x_lim <- max(abs(x_vals), na.rm = TRUE)
+
+post_prob <- mean(x_vals > 0, na.rm = TRUE)
+
+pfdS2_nonfd <- drawS3 %>%
+  ggplot(aes(x = b_disaster_nonfd_sev_exposure2_30_IA)) +
+  geom_density(fill = "#0070C0", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  coord_cartesian(xlim = c(-x_lim, x_lim)) +
+  annotate(
+    "text",
+    x = x_lim * 0.95,
+    y = Inf,
+    label = paste0("Post. Prob = ", round(post_prob * 100, 1), "%"),
+    hjust = 1,
+    vjust = 1.5,
+    size = 5
+  ) +
+  labs(
+    x = expression(beta ~ "(Non-food destroying hazards weighted by severity)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+
+mod_sevnfd_S2
+```
+
+
+```{r}
+hypothesis(mod_sevnfd_S2_cont, "disaster_nonfd_sev_exposure2_30_IA > 0") # they do!
+
+drawS2_cont <- as_draws_df(mod_sevnfd_S2_cont)
+
+
+x_vals <- drawS2_cont$b_disaster_nonfd_sev_exposure2_30_IA
+x_lim <- max(abs(x_vals), na.rm = TRUE)
+
+post_prob <- mean(x_vals > 0, na.rm = TRUE)
+
+pfdS2_nonfd_cont <- drawS2_cont %>%
+  ggplot(aes(x = b_disaster_nonfd_sev_exposure2_30_IA)) +
+  geom_density(fill = "#0070C0", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  coord_cartesian(xlim = c(-x_lim, x_lim)) +
+  annotate(
+    "text",
+    x = x_lim * 0.95,
+    y = Inf,
+    label = paste0("Post. Prob = ", round(post_prob * 100, 1), "%"),
+    hjust = 1,
+    vjust = 1.5,
+    size = 5
+  ) +
+  labs(
+    x = expression(beta ~ "(Non-food destroying hazards weighted by severity)"),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title = element_text(face = "bold")
+  )
+
+pfdS2_nonfd_cont
 ```
 
 

@@ -75,9 +75,6 @@ ggplot(ds, aes(x = fd_freq_30, y = General_TL5B_pref_final)) +
 
 ```
 
-
-
-
 ```{r}
 cor.test(
   ds$ea033,
@@ -87,12 +84,32 @@ cor.test(
 )
 
 cor.test(
-  ds$social_strat,
+  ds$class_strat,
   ds$General_TL5B_pref_final,
   use = "complete.obs",
   method = "spearman"
 )
 
+cor.test(
+  ds$intensity_agricult,
+  ds$General_TL5B_pref_final,
+  use = "complete.obs",
+  method = "spearman"
+)
+
+# most significant
+cor.test(
+  ds$community_size,
+  ds$General_TL5B_pref_final,
+  use = "complete.obs",
+  method = "spearman"
+)
+
+```
+
+
+
+```{r}
 tl_int <- ds %>%
   mutate(
     normative_ind_IA = if_else(normative_est_count_30_IA > 0, 1, 0),

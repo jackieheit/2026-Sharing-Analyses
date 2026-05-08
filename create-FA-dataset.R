@@ -2,10 +2,10 @@ library(tidyverse)
 
 sh_gh <- read_csv("../minerva/Sharing/Upstream/DT-food-labor-sharing-combined-clean.csv")
 
-owc_identifier <- read_csv("data/EA-societal-complexity-variables-qc-Imputed-Values-Data.csv") %>%
+owc_identifier <- read_csv("data/EA-societal-complexity-variables-qc-sccs-sample.csv") %>%
   mutate(
     OWC = str_trim(OWC, side = c("both"))
-  ) %>% select(OWC, ID, eHRAF.Name, ea033)
+  ) %>% select(OWC, ID, eHRAF.Name, ea033, intensity_agricult, community_size, class_strat)
 
 hz <- read_csv("2025-sl-hazards-with-fd-freq-PC.csv")
 

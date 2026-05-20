@@ -112,6 +112,41 @@ sevnonfd <- tf30 %>%
       sevnonfd_max_2 == 3.5 ~ 1.5,
       sevnonfd_max_2 == 4   ~ 2,
       TRUE ~ NA_real_
+    ),
+    sevfd_2.5 = if_else(
+      (H.9.b. < 2.5 | is.na(H.9.b.)) &
+        (H.9.c. < 2.5 | is.na(H.9.c.)) &
+        (H.9.d. < 2.5 | is.na(H.9.d.)),
+      H.9.a.,
+      NA_real_
+    ),
+    
+    sevfd_2 = if_else(
+      (H.9.b. < 2 | is.na(H.9.b.)) &
+        (H.9.c. < 2 | is.na(H.9.c.)) &
+        (H.9.d. < 2 | is.na(H.9.d.)),
+      H.9.a.,
+      NA_real_
+    ),
+    
+    sevfd_sev_wt2.5_30 = case_when(
+      sevfd_2.5 %in% c(0.5, 1, 1.5) ~ 0,
+      sevfd_2.5 == 2   ~ 0.25,
+      sevfd_2.5 == 2.5 ~ 0.5,
+      sevfd_2.5 == 3   ~ 1,
+      sevfd_2.5 == 3.5 ~ 1.5,
+      sevfd_2.5 == 4   ~ 2,
+      TRUE ~ NA_real_
+    ),
+    
+    sevfd_sev_wt2_30 = case_when(
+      sevfd_2 %in% c(0.5, 1, 1.5) ~ 0,
+      sevfd_2 == 2   ~ 0.25,
+      sevfd_2 == 2.5 ~ 0.5,
+      sevfd_2 == 3   ~ 1,
+      sevfd_2 == 3.5 ~ 1.5,
+      sevfd_2 == 4   ~ 2,
+      TRUE ~ NA_real_
     )
   ) %>% 
   group_by(ID, OWC, DQ) %>%
@@ -128,6 +163,14 @@ sevnonfd <- tf30 %>%
       if_else(any(!is.na(sevnonfd_sev_wt2_30)),
               sum(sevnonfd_sev_wt2_30, na.rm = TRUE),
               NA_real_),
+    disaster_fd_sev_exposure2.5_30 =
+      if_else(any(!is.na(sevfd_sev_wt2.5_30)),
+              sum(sevfd_sev_wt2.5_30, na.rm = TRUE),
+              NA_real_),
+    disaster_fd_sev_exposure2_30 =
+      if_else(any(!is.na(sevfd_sev_wt2_30)),
+              sum(sevfd_sev_wt2_30, na.rm = TRUE),
+              NA_real_),
     .groups = "drop"
   )
 
@@ -135,7 +178,7 @@ ds_sevnonfd <- full_join(sevnonfd, soc_master, by = c("ID","OWC", "DQ"))
   
 
 nonfd <- tf30 %>%
-  filter(H.13. %in% c(1, 2, 4) ) %>%
+  filter(H.13. %in% c(1, 2, 3) ) %>%
   mutate(
     nonfd_max = pmax(H.9.b., H.9.c., H.9.d., na.rm = TRUE),
     nonfd_sev_wt_30 = case_when(
@@ -172,6 +215,39 @@ nonfd <- tf30 %>%
       nonfd_max_2 == 3.5 ~ 1.5,
       nonfd_max_2 == 4   ~ 2,
       TRUE ~ NA_real_
+    ),
+    fd_2.5 = if_else(
+      (H.9.b. < 2.5 | is.na(H.9.b.)) &
+        (H.9.c. < 2.5 | is.na(H.9.c.)) &
+        (H.9.d. < 2.5 | is.na(H.9.d.)),
+      H.9.a.,
+      NA_real_
+    ),
+    
+    fd_2 = if_else(
+      (H.9.b. < 2 | is.na(H.9.b.)) &
+        (H.9.c. < 2 | is.na(H.9.c.)) &
+        (H.9.d. < 2 | is.na(H.9.d.)),
+      H.9.a.,
+      NA_real_
+    ),
+    fd_wt2.5_30 = case_when(
+      fd_2.5 %in% c(0.5, 1, 1.5) ~ 0,
+      fd_2.5 == 2   ~ 0.25,
+      fd_2.5 == 2.5 ~ 0.5,
+      fd_2.5 == 3   ~ 1,
+      fd_2.5 == 3.5 ~ 1.5,
+      fd_2.5 == 4   ~ 2,
+      TRUE ~ NA_real_
+    ),
+    fd_wt2_30 = case_when(
+      fd_2 %in% c(0.5, 1, 1.5) ~ 0,
+      fd_2 == 2   ~ 0.25,
+      fd_2 == 2.5 ~ 0.5,
+      fd_2 == 3   ~ 1,
+      fd_2 == 3.5 ~ 1.5,
+      fd_2 == 4   ~ 2,
+      TRUE ~ NA_real_
     )
   ) %>% 
   group_by(ID, OWC, DQ) %>%
@@ -188,11 +264,19 @@ nonfd <- tf30 %>%
       if_else(any(!is.na(nonfd_sev_wt2_30)),
               sum(nonfd_sev_wt2_30, na.rm = TRUE),
               NA_real_),
+    allhazards_fd_sev_exposure2.5_30 =
+      if_else(any(!is.na(fd_wt2.5_30)),
+              sum(fd_wt2.5_30, na.rm = TRUE),
+              NA_real_),
+    allhazards_fd_sev_exposure2_30 =
+      if_else(any(!is.na(fd_wt2_30)),
+              sum(fd_wt2_30, na.rm = TRUE),
+              NA_real_),
     .groups = "drop"
   )
 
 nonfd_freq <- tf30 %>%
-  filter(H.13. %in% c(1, 2, 4)) %>%
+  filter(H.13. %in% c(1, 2, 3)) %>%
   mutate(
     nonfd_hz_ind = if_else(
       !is.na(H.9.b.) | !is.na(H.9.c.) | !is.na(H.9.d.),
@@ -245,30 +329,57 @@ ds_FA_sevnonfd <- full_join(ds_FA, ds_nonfd, by = c("ID", "OWC", "DQ")) %>%
       is.na(disaster_nonfd_sev_exposure_30) & (DQ == 1 | DQ == 2) ~ 0,
       is.na(disaster_nonfd_sev_exposure_30) & (DQ == 3 | DQ == 4) ~ NA_real_,
       TRUE ~ disaster_nonfd_sev_exposure_30),
+    
     disaster_nonfd_sev_exposure2.5_30_IA = case_when(
       is.na(disaster_nonfd_sev_exposure2.5_30) & (DQ == 1 | DQ == 2) ~ 0,
       is.na(disaster_nonfd_sev_exposure2.5_30) & (DQ == 3 | DQ == 4) ~ NA_real_,
       TRUE ~ disaster_nonfd_sev_exposure2.5_30),
+    
     disaster_nonfd_sev_exposure2_30_IA = case_when(
       is.na(disaster_nonfd_sev_exposure2_30) & (DQ == 1 | DQ == 2) ~ 0,
       is.na(disaster_nonfd_sev_exposure2_30) & (DQ == 3 | DQ == 4) ~ NA_real_,
       TRUE ~ disaster_nonfd_sev_exposure2_30),
+    
+    disaster_fd_sev_exposure2.5_30_IA = case_when(
+      is.na(disaster_fd_sev_exposure2.5_30) & (DQ == 1 | DQ == 2) ~ 0,
+      is.na(disaster_fd_sev_exposure2.5_30) & (DQ == 3 | DQ == 4) ~ NA_real_,
+      TRUE ~ disaster_fd_sev_exposure2.5_30),
+    
+    disaster_fd_sev_exposure2_30_IA = case_when(
+      is.na(disaster_fd_sev_exposure2_30) & (DQ == 1 | DQ == 2) ~ 0,
+      is.na(disaster_fd_sev_exposure2_30) & (DQ == 3 | DQ == 4) ~ NA_real_,
+      TRUE ~ disaster_fd_sev_exposure2_30),
+    
     allhazards_nonfd_sev_exposure_30_IA = case_when(
       is.na(allhazards_nonfd_sev_exposure_30) & (DQ == 1 | DQ == 2) ~ 0,
       is.na(allhazards_nonfd_sev_exposure_30) & (DQ == 3 | DQ == 4) ~ NA_real_,
       TRUE ~ allhazards_nonfd_sev_exposure_30),
+    
     allhazards_nonfd_sev_exposure2.5_30_IA = case_when(
       is.na(allhazards_nonfd_sev_exposure2.5_30) & (DQ == 1 | DQ == 2) ~ 0,
       is.na(allhazards_nonfd_sev_exposure2.5_30) & (DQ == 3 | DQ == 4) ~ NA_real_,
       TRUE ~ allhazards_nonfd_sev_exposure2.5_30),
+    
     allhazards_nonfd_sev_exposure2_30_IA = case_when(
       is.na(allhazards_nonfd_sev_exposure2_30) & (DQ == 1 | DQ == 2) ~ 0,
       is.na(allhazards_nonfd_sev_exposure2_30) & (DQ == 3 | DQ == 4) ~ NA_real_,
       TRUE ~ allhazards_nonfd_sev_exposure2_30),
+    
+    allhazards_fd_sev_exposure2.5_30_IA = case_when(
+      is.na(allhazards_fd_sev_exposure2.5_30) & (DQ == 1 | DQ == 2) ~ 0,
+      is.na(allhazards_fd_sev_exposure2.5_30) & (DQ == 3 | DQ == 4) ~ NA_real_,
+      TRUE ~ allhazards_fd_sev_exposure2.5_30),
+    
+    allhazards_fd_sev_exposure2_30_IA = case_when(
+      is.na(allhazards_fd_sev_exposure2_30) & (DQ == 1 | DQ == 2) ~ 0,
+      is.na(allhazards_fd_sev_exposure2_30) & (DQ == 3 | DQ == 4) ~ NA_real_,
+      TRUE ~ allhazards_fd_sev_exposure2_30),
+    
     nonfd_2.5_freq_30_IA = case_when(
       is.na(nonfd_2.5_freq_30) & (DQ == 1 | DQ == 2) ~ 1,
       is.na(nonfd_2.5_freq_30) & (DQ == 3 | DQ == 4) ~ NA_real_,
       TRUE ~ nonfd_2.5_freq_30),
+    
     nonfd_2_freq_30_IA = case_when(
       is.na(nonfd_2_freq_30) & (DQ == 1 | DQ == 2) ~ 1,
       is.na(nonfd_2_freq_30) & (DQ == 3 | DQ == 4) ~ NA_real_,

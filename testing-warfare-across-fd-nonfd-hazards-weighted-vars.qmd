@@ -35,6 +35,12 @@ cor.test(
 
 
 ```
+## non food destroying vars
+```{r}
+ggplot(var_spreads, aes(x = ovfreq_R , y = allhazards_nonfd_sev_exposure2.5_30)) +
+  geom_jitter(height = 0.05, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
+```
 
 ## food destroying vars
 
@@ -99,42 +105,16 @@ These two variables appear very similar and are highly correlated. I will use th
 ## Overall frequency of warfare
 
 ```{r}
-fd_ovfreq <- var_spreads[complete.cases(var_spreads[, c("fd_freq_30_IA", "ovfreq_R")]), ] 
+fd_ovfreq <- var_spreads[complete.cases(var_spreads[, c("allhazards_fd_sev_exposure2.5_30", "ovfreq_R")]), ] 
 
-fd_ovfreq_cont <- var_spreads[complete.cases(var_spreads[, c("fd_freq_30_IA", "ovfreq_R", "ea033")]), ] 
+fd_ovfreq_cont <- var_spreads[complete.cases(var_spreads[, c("allhazards_fd_sev_exposure2.5_30", "ovfreq_R", "ea033")]), ] 
 ```
 
-```{r}
-ggplot(fd_ovfreq_IA, aes(x = ovfreq_R , y = fd_freq_30_IA)) +
-  geom_jitter(height = 0.05, alpha = 0.6) +
-  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
 
-# sensitivity analysis
-# fd_ovfreq$z_sev <- scale(fd_ovfreq$fd_freq_30_IA)
-
-# fd_ovfreq_trim <- fd_ovfreq[abs(fd_ovfreq$z_sev) <= 2, ]
-
-
-# ggplot(fd_ovfreq_trim, aes(x = ovfreq_R, y = fd_freq_30_IA)) +
-#   geom_jitter(height = 0.05, alpha = 0.6) +
-#   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
-
-
-test <- lm(ovfreq_R ~ fd_freq_30_IA, data = fd_ovfreq_IA)
-summary(test)
-plot(test)
-
-
-test_no26 <- lm(ovfreq_R ~ fd_freq_30_IA,
-                data = fd_ovfreq_IA[-26, ])
-
-summary(test)
-summary(test_no26)
-```
 
 ```{r}
 mod_fd_ovfreq <- brm(
-  formula = ovfreq_R ~ fd_freq_30_IA,
+  formula = ovfreq_R ~ allhazards_fd_sev_exposure2.5_30,
   data = fd_ovfreq,
   family = gaussian(),
   chains = 4,
@@ -147,7 +127,7 @@ mod_fd_ovfreq <- brm(
 )
 
 mod_fd_ovfreq_cont <- brm(
-  formula = ovfreq_R ~ fd_freq_30_IA + mo(ea033),
+  formula = ovfreq_R ~ allhazards_fd_sev_exposure2.5_30 + mo(ea033),
   data = fd_ovfreq_cont,
   family = gaussian(),
   chains = 4,
@@ -169,12 +149,12 @@ plot(conditional_effects_plot)
 ```
 
 ```{r}
-hypothesis(mod_fd_ovfreq, "fd_freq_30_IA > 0") # they do!
+hypothesis(mod_fd_ovfreq, "allhazards_fd_sev_exposure2.5_30 > 0") # they do!
 
 draws2 <- as_draws_df(mod_fd_ovfreq)
 
 
-x_vals <- draws2$b_fd_freq_30_IA
+x_vals <- draws2$b_allhazards_fd_sev_exposure2.5_30
 x_lim <- max(abs(x_vals), na.rm = TRUE)
 
 post_prob <- mean(x_vals > 0, na.rm = TRUE)
@@ -299,17 +279,17 @@ pfd_ovfreq
 
 ```{r}
 nonfd_ovfreq <- var_spreads[
-  complete.cases(var_spreads[, c("nonfd_2.5_freq_30", "ovfreq_R")]),
+  complete.cases(var_spreads[, c("allhazards_nonfd_sev_exposure2.5_30", "ovfreq_R")]),
 ]
 
-ggplot(nonfd_ovfreq, aes(x = nonfd_2.5_freq_30, y = ovfreq_R)) +
+ggplot(nonfd_ovfreq, aes(x = allhazards_nonfd_sev_exposure2.5_30, y = ovfreq_R)) +
   geom_jitter(width = 0.05, alpha = 0.6) +
   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
 ```
 
 ```{r}
 mod_nonfd_ovfreq <- brm(
-  formula = ovfreq_R ~ nonfd_2.5_freq_30,
+  formula = ovfreq_R ~ allhazards_nonfd_sev_exposure2.5_30,
   data = nonfd_ovfreq,
   family = gaussian(),
   chains = 4,
@@ -328,17 +308,17 @@ plot(conditional_effects(mod_nonfd_ovfreq))
 ```
 
 ```{r}
-hypothesis(mod_nonfd_ovfreq, "nonfd_2.5_freq_30 < 0")
+hypothesis(mod_nonfd_ovfreq, "allhazards_nonfd_sev_exposure2.5_30 < 0")
 
 draws2 <- as_draws_df(mod_nonfd_ovfreq)
 
 p_nonfd_ovfreq <- draws2 %>%
-  ggplot(aes(x = b_nonfd_2.5_freq_30)) +
+  ggplot(aes(x = b_allhazards_nonfd_sev_exposure2.5_30)) +
   geom_density(fill = "blue", alpha = 0.7) +
   geom_vline(xintercept = 0, linetype = "dashed") +
   labs(
     title = "Overall Warfare Frequency",
-    x = expression(beta ~ "(Non-FD Hazard Frequency)"),
+    x = expression(beta ~ "(Non-FD hazard severity weighted by frequency)"),
     y = "Density"
   ) +
   theme_minimal(base_size = 14)
@@ -348,7 +328,7 @@ p_nonfd_ovfreq
 
 ```{r}
 nonfd_ovfreq_IA <- var_spreads[
-  complete.cases(var_spreads[, c("nonfd_2.5_freq_30_IA", "ovfreq_R")]),
+  complete.cases(var_spreads[, c("allhazards_nonfd_sev_exposure2.5_30_IA", "ovfreq_R")]),
 ]
 
 ggplot(nonfd_ovfreq_IA, aes(x = nonfd_2.5_freq_30_IA, y = ovfreq_R)) +
@@ -358,7 +338,7 @@ ggplot(nonfd_ovfreq_IA, aes(x = nonfd_2.5_freq_30_IA, y = ovfreq_R)) +
 
 ```{r}
 mod_nonfd_ovfreq_IA <- brm(
-  formula = ovfreq_R ~ nonfd_2.5_freq_30_IA,
+  formula = ovfreq_R ~ allhazards_nonfd_sev_exposure2.5_30_IA,
   data = nonfd_ovfreq_IA,
   family = gaussian(),
   chains = 4,
@@ -377,17 +357,17 @@ plot(conditional_effects(mod_nonfd_ovfreq_IA))
 ```
 
 ```{r}
-hypothesis(mod_nonfd_ovfreq_IA, "nonfd_2.5_freq_30_IA < 0")
+hypothesis(mod_nonfd_ovfreq_IA, "allhazards_nonfd_sev_exposure2.5_30_IA < 0")
 
 draws2 <- as_draws_df(mod_nonfd_ovfreq_IA)
 
 p_nonfd_ovfreq_IA <- draws2 %>%
-  ggplot(aes(x = b_nonfd_2.5_freq_30_IA)) +
+  ggplot(aes(x = b_allhazards_nonfd_sev_exposure2.5_30_IA)) +
   geom_density(fill = "blue", alpha = 0.7) +
   geom_vline(xintercept = 0, linetype = "dashed") +
   labs(
     title = "Overall Warfare Frequency",
-    x = expression(beta ~ "(Non-FD Hazard Frequency (IA))"),
+    x = expression(beta ~ "(Non-FD hazard severity weighted by frequency (IA))"),
     y = "Density"
   ) +
   theme_minimal(base_size = 14)

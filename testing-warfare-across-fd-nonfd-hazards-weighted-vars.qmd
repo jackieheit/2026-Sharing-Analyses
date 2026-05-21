@@ -92,7 +92,7 @@ cor.test(
 
 ```
 
-These two variables appear very similar and are highly correlated. I will use the allhazards_H9a_sev_exposure_30 variable for food destroying metric.
+These two variables appear very similar and are highly correlated. I will use the allhazards_H9a_sev_exposure_30 variable as the food destroying metric.
 
 # Food destroying Hazards
 

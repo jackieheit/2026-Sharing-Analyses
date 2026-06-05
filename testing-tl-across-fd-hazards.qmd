@@ -62,11 +62,11 @@ ggplot(tl_bp_clean, aes(
 
 
 
-ggplot(ds, aes(x = fd_freq_30_IA, y = General_TL5B_pref_final)) +
+ggplot(ds, aes(x = General_TL5B_pref_final, y = allhazards_nonfd_sev_exposure2_30)) +
   geom_jitter(height = 0.05, alpha = 0.6) +
   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
 
-ggplot(ds, aes(x = fd_freq_30, y = General_TL5B_pref_final)) +
+ggplot(ds, aes(x = disaster_h9a_sev_exposure_30_IA, y = General_TL5B_pref_final)) +
   geom_jitter(height = 0.05, alpha = 0.6) +
   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
 

@@ -61,7 +61,10 @@ cor.test(
 ```
 ### Food destroying
 ```{r}
-data_clean_LS3 <- ds_FA[complete.cases(ds_FA[, c("disaster_fd_sev_exposure2.5_30", "LS3_Res_IA_2")]), ]
+data_clean_LS3 <- ds_FA[complete.cases(ds_FA[, c("disaster_h9a_sev_exposure_30", "LS3_Res_IA_2")]), ]
+
+data_clean_LS3_IA <- ds_FA[complete.cases(ds_FA[, c("disaster_h9a_sev_exposure_30_IA", "LS3_Res_IA_2")]), ]
+
 
 ggplot(ds_FA, aes(x = disaster_h9a_sev_exposure_30, y = LS3_Res_IA_2)) +
   geom_jitter(height = 0.05, alpha = 0.6) +
@@ -70,7 +73,7 @@ ggplot(ds_FA, aes(x = disaster_h9a_sev_exposure_30, y = LS3_Res_IA_2)) +
 
 ```{r}
 mod_LS3 <- brm(
-  formula = LS3_Res_IA_2 ~ disaster_fd_sev_exposure2.5_30,
+  formula = LS3_Res_IA_2 ~ disaster_h9a_sev_exposure_30,
   data = data_clean_LS3,
   family = bernoulli(link = "logit"),
   chains = 4,
@@ -83,8 +86,8 @@ mod_LS3 <- brm(
 )
 
 mod_LS3_IA <- brm(
-  formula = LS3_Res_IA_2 ~ disaster_fd_sev_exposure2.5_30_IA,
-  data = data_clean_LS3,
+  formula = LS3_Res_IA_2 ~ disaster_h9a_sev_exposure_30_IA,
+  data = data_clean_LS3_IA,
   family = bernoulli(link = "logit"),
   chains = 4,
   iter = 2000,
@@ -104,18 +107,18 @@ plot(conditional_effects_plot)
 ```
 
 ```{r}
-hypothesis(mod_LS3, "disaster_fd_sev_exposure2.5_30 < 0")
+hypothesis(mod_LS3, "disaster_h9a_sev_exposure_30 < 0")
 
 drawLS3 <- as_draws_df(mod_LS3)
 
 
-x_vals <- drawLS3$b_disaster_fd_sev_exposure2.5_30
+x_vals <- drawLS3$b_disaster_h9a_sev_exposure_30
 x_lim <- max(abs(x_vals), na.rm = TRUE)
 
 post_prob <- mean(x_vals < 0, na.rm = TRUE)
 
 pfdLS3 <- drawLS3 %>%
-  ggplot(aes(x = b_disaster_fd_sev_exposure2.5_30)) +
+  ggplot(aes(x = b_disaster_h9a_sev_exposure_30)) +
   geom_density(fill = "#ED7D31", alpha = 0.7) +
   geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
   coord_cartesian(xlim = c(-x_lim, x_lim)) +
@@ -142,12 +145,11 @@ pfdLS3
 ```
 
 ```{r}
-hypothesis(mod_LS3_IA, "disaster_fd_sev_exposure2.5_30_IA < 0")
-
+hypothesis(mod_LS3_IA, "disaster_h9a_sev_exposure_30_IA < 0")
 drawLS3_IA <- as_draws_df(mod_LS3_IA)
 
 
-x_vals <- drawLS3_IA$b_disaster_fd_sev_exposure2.5_30_IA
+x_vals <- drawLS3_IA$disaster_h9a_sev_exposure_30_IA
 x_lim <- max(abs(x_vals), na.rm = TRUE)
 
 post_prob <- mean(x_vals < 0, na.rm = TRUE)
@@ -248,26 +250,19 @@ also doesn't look like much.
 
 ### Food destroying vars
 ```{r}
-ggplot(data_clean_LS3, aes(x = allhazards_fd_sev_exposure2.5_30, y = LS3_Res_IA_2)) +
+ggplot(ds_FA, aes(x = disaster_h9a_sev_exposure_30, y = LS3_Res_IA_2)) +
   geom_jitter(height = 0.05, alpha = 0.6) +
   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
 
-ggplot(data_clean_LS3, aes(x = allhazards_fd_sev_exposure2.5_30_IA, y = LS3_Res_IA_2)) +
+ggplot(ds_FA, aes(x = disaster_h9a_sev_exposure_30_IA, y = LS3_Res_IA_2)) +
   geom_jitter(height = 0.05, alpha = 0.6) +
   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
 
-ggplot(data_clean_LS3, aes(x = allhazards_fd_sev_exposure2_30, y = LS3_Res_IA_2)) +
+ggplot(ds_FA, aes(x = allhazards_H9a_sev_exposure_30, y = LS3_Res_IA_2)) +
   geom_jitter(height = 0.05, alpha = 0.6) +
   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
 
-ggplot(data_clean_LS3, aes(x = allhazards_fd_sev_exposure2_30_IA, y = LS3_Res_IA_2)) +
-  geom_jitter(height = 0.05, alpha = 0.6) +
-  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
-
-ggplot(data_clean_LS3, aes(x = allhazards_H9a_sev_exposure_30, y = LS3_Res_IA_2)) +
-  geom_jitter(height = 0.05, alpha = 0.6) +
-  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
-ggplot(data_clean_LS3, aes(x = allhazards_H9a_sev_exposure_30_IA, y = LS3_Res_IA_2)) +
+ggplot(ds_FA, aes(x = allhazards_H9a_sev_exposure_30_IA, y = LS3_Res_IA_2)) +
   geom_jitter(height = 0.05, alpha = 0.6) +
   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
 ```
@@ -275,13 +270,6 @@ ggplot(data_clean_LS3, aes(x = allhazards_H9a_sev_exposure_30_IA, y = LS3_Res_IA
 
 ### Non fd vars
 ```{r}
-ggplot(data_clean_LS3, aes(x = allhazards_nonfd_sev_exposure2.5_30, y = LS3_Res_IA_2)) +
-  geom_jitter(height = 0.05, alpha = 0.6) +
-  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
-ggplot(data_clean_LS3, aes(x = allhazards_nonfd_sev_exposure2.5_30_IA, y = LS3_Res_IA_2)) +
-  geom_jitter(height = 0.05, alpha = 0.6) +
-  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
-
 ggplot(data_clean_LS3, aes(x = allhazards_nonfd_sev_exposure2_30, y = LS3_Res_IA_2)) +
   geom_jitter(height = 0.05, alpha = 0.6) +
   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
@@ -292,40 +280,27 @@ ggplot(data_clean_LS3, aes(x = allhazards_nonfd_sev_exposure2_30_IA, y = LS3_Res
 ## Daily Labor Sharing
 ### Food destroying
 ```{r}
-ggplot(data_clean_LS3, aes(x = allhazards_fd_sev_exposure2.5_30, y = LS2_Res_IA_2)) +
+ggplot(ds_FA, aes(x = disaster_h9a_sev_exposure_30, y = LS2_Res_IA_2)) +
   geom_jitter(height = 0.05, alpha = 0.6) +
   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
 
-ggplot(data_clean_LS3, aes(x = allhazards_fd_sev_exposure2.5_30_IA, y = LS2_Res_IA_2)) +
+ggplot(data_clean_LS3, aes(x = disaster_h9a_sev_exposure_30_IA, y = LS2_Res_IA_2)) +
   geom_jitter(height = 0.05, alpha = 0.6) +
   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
 
-ggplot(data_clean_LS3, aes(x = allhazards_fd_sev_exposure2_30, y = LS2_Res_IA_2)) +
+ggplot(data_clean_LS3, aes(x = allhazards_h9a_sev_exposure_30, y = LS2_Res_IA_2)) +
   geom_jitter(height = 0.05, alpha = 0.6) +
   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
 
-ggplot(data_clean_LS3, aes(x = allhazards_fd_sev_exposure2_30_IA, y = LS2_Res_IA_2)) +
+ggplot(data_clean_LS3, aes(x = allhazards_h9a_sev_exposure_30_IA, y = LS2_Res_IA_2)) +
   geom_jitter(height = 0.05, alpha = 0.6) +
   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
 
-ggplot(data_clean_LS3, aes(x = allhazards_H9a_sev_exposure_30, y = LS2_Res_IA_2)) +
-  geom_jitter(height = 0.05, alpha = 0.6) +
-  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
-ggplot(data_clean_LS3, aes(x = allhazards_H9a_sev_exposure_30_IA, y = LS2_Res_IA_2)) +
-  geom_jitter(height = 0.05, alpha = 0.6) +
-  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
 ```
 
 
 ### Non fd vars
 ```{r}
-ggplot(data_clean_LS3, aes(x = allhazards_nonfd_sev_exposure2.5_30, y = LS2_Res_IA_2)) +
-  geom_jitter(height = 0.05, alpha = 0.6) +
-  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
-ggplot(data_clean_LS3, aes(x = allhazards_nonfd_sev_exposure2.5_30_IA, y = LS2_Res_IA_2)) +
-  geom_jitter(height = 0.05, alpha = 0.6) +
-  geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
-
 ggplot(data_clean_LS3, aes(x = allhazards_nonfd_sev_exposure2_30, y = LS2_Res_IA_2)) +
   geom_jitter(height = 0.05, alpha = 0.6) +
   geom_smooth(method = "loess", se = FALSE, color = "#66c2a4")
